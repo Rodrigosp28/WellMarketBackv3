@@ -10,6 +10,5 @@ namespace WellMarket.Entities.Responses
         public List<Venta> venta { get; set; }
         public Ticket ticket { get; set; }
         public Mesa mesa { get; set; }
-        public string hola {get;set;}
     }
 }
