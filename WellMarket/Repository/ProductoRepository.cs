@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using WellMarket.Entities;
+using WellMarket.Entities.Responses;
 using WellMarket.Helpers;
 using WellMarket.Responses;
 
@@ -21,6 +22,7 @@ namespace WellMarket.Repository
         Task<Response<List<Imagenes_Producto>>> ObtenerImagenesPorProducto(int id);
         Task<ResponseBase> EliminarImagenProducto(int idEmpresa, string imagen);
         Task<Response<List<Producto>>> ObtenerProductoDisponiblePorEmpresa(int idEmpresa);
+        Task<Response<List<PMasVendidos>>> ObtenerCincoProductosMasVendidos(int idEmpresa, string fecha);
 
     }
     public class ProductoRepository: IProducto
@@ -172,6 +174,47 @@ namespace WellMarket.Repository
                         }
 
 
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<PMasVendidos>>> ObtenerCincoProductosMasVendidos(int idEmpresa, string fecha)
+        {
+            var response = new Response<List<PMasVendidos>>();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Reporte.spArticulosMasVendidos", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@fecha", fecha);
+                        connection.Open();
+                        using(var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<PMasVendidos>();
+                            while (reader.Read())
+                            {
+                                list.Add(new PMasVendidos
+                                {
+                                    nombre = reader.GetString("nombre"),
+                                    cantidad = reader.GetInt32("cantidad"),
+                                    precio = reader.GetDouble("precio")
+                                });
+                            }
+                            response.success = true;
+                            response.message = "Datos obtenidos Correctamente";
+                            response.Data = list;
+                        }
                     }
                 }
             }

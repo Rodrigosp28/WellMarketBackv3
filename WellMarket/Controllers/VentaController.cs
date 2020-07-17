@@ -38,6 +38,22 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        [HttpPost("ticket/today")]
+        public async Task<ActionResult>ObtenerTicketsdelDia([FromBody]EmpresaFecha ef)
+        {
+            var response = new Response<List<Ticket>>();
+            try
+            {
+                response = await this.ventas.ObtenerTicketsPorIdEmpresa(ef.idEmpresa, ef.fecha);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpPost("ticket/iniciar")]
         public async Task<ActionResult>AbrirTicket([FromBody]InsertTicket it)
         {
@@ -113,6 +129,23 @@ namespace WellMarket.Controllers
             try
             {
                 response = await this.ventas.ObtenerVentaTicket(idTicket);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+
+        }
+
+        [HttpDelete("ticket/venta/{idVenta}")]
+        public async Task<ActionResult> EliminarVentaTicket(int idVenta)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.ventas.EliminarVentaTicket(idVenta);
             }
             catch (Exception ex)
             {

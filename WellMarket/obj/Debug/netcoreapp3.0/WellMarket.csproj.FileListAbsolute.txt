@@ -37,8 +37,6 @@ C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\bin\Debug\netcoreapp3.0\runt
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\bin\Debug\netcoreapp3.0\runtimes\win\lib\netcoreapp2.0\System.Text.Encoding.CodePages.dll
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.AssemblyInfoInputs.cache
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.AssemblyInfo.cs
-C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.csproj.CoreCompileInputs.cache
-C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.RazorTargetAssemblyInfo.cache
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.csproj.CopyComplete
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\staticwebassets\WellMarket.StaticWebAssets.Manifest.cache
@@ -47,3 +45,10 @@ C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\Well
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.pdb
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.genruntimeconfig.cache
 C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.csprojAssemblyReference.cache
+C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\bin\Debug\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\bin\Debug\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\bin\Debug\netcoreapp3.0\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\bin\Debug\netcoreapp3.0\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\bin\Debug\netcoreapp3.0\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.csproj.CoreCompileInputs.cache
+C:\Users\Rodrigo\source\repos\WellMarket\WellMarket\obj\Debug\netcoreapp3.0\WellMarket.MvcApplicationPartsAssemblyInfo.cache

@@ -22,6 +22,10 @@ namespace WellMarket.Repository
         Task<ResponseBase> InsertarVentaTicket(Venta v);
         Task<Response<TicketVentaResponse>> ObtenerVentaTicket(int idTicket);
         Task<ResponseBase> CancelarTicket(CerrarTicket ct);
+        Task<ResponseBase> EliminarVentaTicket(int idVenta);
+        Task<Ticket> ObtenerTicketId(int idTicket);
+        Task<Mesa> ObtenerMesaIdTicket(int idTicket);
+        Task<Response<List<Ticket>>> ObtenerTicketsPorIdEmpresa(int idEmpresa, string fecha);
     }
     public class VentasRepository : IVentas
     {
@@ -111,6 +115,42 @@ namespace WellMarket.Repository
                 }
             }
             catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<ResponseBase> EliminarVentaTicket(int idVenta)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spEliminarProductoVenta", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idVenta", idVenta);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.success = true;
+                            response.message = "Venta Eliminada Correctamente";
+                            response.id = idVenta;
+                        }
+                        else
+                        {
+                            response.success = false;
+                            response.message = "Error";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;
@@ -261,6 +301,130 @@ namespace WellMarket.Repository
             return response;
         }
 
+        public async Task<Mesa> ObtenerMesaIdTicket(int idTicket)
+        {
+            var mesa = new Mesa();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spObtenerMesaPorIdTicket", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idTicket", idTicket);
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (reader.Read())
+                            {
+                                mesa.idMesa = reader.GetInt32("idMesa");
+                                mesa.nombre = reader.GetString("nombre");
+                                mesa.descripcion = reader.GetString("descripcion");
+                                mesa.idEmpresa = reader.GetInt32("idEmpresa");
+                                mesa.ocupado = reader.GetBoolean("ocupado");
+                            }
+                            return mesa;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return mesa;
+            }
+        }
+
+        public async Task<Ticket> ObtenerTicketId(int idTicket)
+        {
+            var ticket = new Ticket();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spObtenerTicketPorId", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idTicket", idTicket);
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (reader.Read())
+                            {
+                                ticket.idTicket = reader.GetInt32("idTicket");
+                                ticket.fecha = reader.GetString("fecha");
+                                ticket.horaEntrada = reader.GetString("horaEntrada");
+                                ticket.idEstatus = reader.GetInt32("idEstatus");
+                                ticket.activo = reader.GetBoolean("activo");
+                            }
+                            return ticket;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return ticket;
+            }
+        }
+
+        public async Task<Response<List<Ticket>>> ObtenerTicketsPorIdEmpresa(int idEmpresa, string fecha)
+        {
+            var response = new Response<List<Ticket>>();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Reporte.spObtenerTicketPorIdEmpresa", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@fecha", fecha);
+                        connection.Open();
+                        using(var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Ticket>();
+                            
+                            while (reader.Read())
+                            {
+                                var ticket = new Ticket();
+                                ticket.idTicket = reader.GetInt32("idTicket");
+                                ticket.fecha = reader.GetString("fecha");
+                                ticket.hora = reader.GetString("hora");
+                                ticket.horaEntrada = reader.GetString("horaEntrada");
+                                ticket.horaSalida = reader.GetString("horaSalida");
+                                ticket.total = reader.GetDouble("total");
+                                ticket.descripcion = reader.GetString("descripcion");
+                                ticket.comentario = reader.GetString("comentario");
+                                ticket.idEstatus = reader.GetInt32("idEstatus");
+                                ticket.nombreEstatus = reader.GetString("nombreEstatus");
+                                ticket.idUsuario = reader.GetInt32("idUsuario");
+                                ticket.nombreusuario = reader.GetString("nombreUsuario");
+                                ticket.idEmpresa = reader.GetInt32("idEmpresa");
+                                ticket.activo = reader.GetBoolean("activo");
+                                ticket.pago = reader.GetDouble("pago");
+                                ticket.cambio = reader.GetDouble("cambio");
+                                list.Add(ticket);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenidos Correctamente";
+                            response.Data = list;
+
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
         public async Task<Response<TicketVentaResponse>> ObtenerVentaTicket(int idTicket)
         {
             var response = new Response<TicketVentaResponse>();
@@ -279,16 +443,9 @@ namespace WellMarket.Repository
                         {
                             var list = new List<Venta>();
                             var mesa = new Mesa();
-                            var ticketD = new Ticket();
                             while (reader.Read())
                             {
                                 var ventar = new Venta();
-                                mesa.idMesa = reader.GetInt32("idMesa");
-                                mesa.nombre = reader.GetString("nombreMesa");
-                                mesa.descripcion = reader.GetString("descripcionMesa");
-                                ticketD.fecha = reader.GetString("fecha");
-                                ticketD.horaEntrada = reader.GetString("horaEntrada");
-                                ticketD.activo = reader.GetBoolean("activoTicket");
                                 ventar.idVenta = reader.GetInt32("idVenta");
                                 ventar.idTicket = reader.GetInt32("idTicket");
                                 ventar.idProducto = reader.GetInt32("idProducto");
@@ -306,8 +463,8 @@ namespace WellMarket.Repository
                                 list.Add(ventar);
                             }
                             ticket.venta = list;
-                            ticket.mesa = mesa;
-                            ticket.ticket = ticketD;
+                            ticket.mesa = await this.ObtenerMesaIdTicket(idTicket);
+                            ticket.ticket = await this.ObtenerTicketId(idTicket);
                             response.success = true;
                             response.message = "Datos Obtenidos Correctamente";
                             response.Data = ticket;

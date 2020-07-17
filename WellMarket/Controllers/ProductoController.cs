@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WellMarket.Entities;
+using WellMarket.Entities.Request;
+using WellMarket.Entities.Responses;
 using WellMarket.Repository;
 using WellMarket.Responses;
 
@@ -50,6 +52,22 @@ namespace WellMarket.Controllers
                 response = await this.producto.ObtenerProductoPorEmpresa(id);
             }
             catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("masVendidos")]
+        public async Task<ActionResult> ProductosMasVendidos([FromBody]EmpresaFecha ef)
+        {
+            var response = new Response<List<PMasVendidos>>();
+            try
+            {
+                response = await this.producto.ObtenerCincoProductosMasVendidos(ef.idEmpresa, ef.fecha);
+            }
+            catch(Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;
@@ -121,6 +139,7 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        // sube imagen fisica y la registra en la base de datos
         [HttpPost("imagen")]
         public async Task<ActionResult> ImagenProducto(IFormCollection formdata)
         {
@@ -158,9 +177,9 @@ namespace WellMarket.Controllers
                         var filee = Path.Combine(environment.ContentRootPath);
                         var date = DateTime.Now;
                         var id = date.Millisecond;
-                        var carpeta = filee + "\\" + "Content" + "\\" + idEmpresa +"\\" + imgp.idProducto;
-                        var filePath = filee + "\\" + "Content" + "\\" + idEmpresa + "\\" + imgp.idProducto+"\\" + id + ext;
-                        var ruta = "\\" + "Content" + "\\" + idEmpresa + "\\" + imgp.idProducto + "\\" + id + ext;
+                        var carpeta = filee + "\\" + "Content" + "\\" + "empresa"  +  "\\" + idEmpresa +"\\" + imgp.idProducto;
+                        var filePath = filee + "\\" + "Content" + "\\" + "empresa" + "\\" + idEmpresa + "\\" + imgp.idProducto+"\\" + id + ext;
+                        var ruta = "\\" + "Content" + "\\" + "empresa"  + "\\" + idEmpresa + "\\" + imgp.idProducto + "\\" + id + ext;
                         imgp.url = ruta;
                         imgp.idEmpresa = int.Parse(idEmpresa);
                         imgp.imagen = id.ToString() + ext;
@@ -197,12 +216,13 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        // obtiene imagen especifica y fisica
         [HttpGet("imagen/{idEmpresa}/{idProducto}/{imagen}")]
         public async Task<IActionResult> ImagenProducto(int idEmpresa, int idProducto, string imagen)
         {
             Byte[] b;
             var filee = Path.Combine(environment.ContentRootPath);
-            var filePath = filee + "\\" + "Content" + "\\" + idEmpresa + "\\" + idProducto + "\\" + imagen;
+            var filePath = filee + "\\" + "Content" + "\\" + "empresa"  + "\\" + idEmpresa + "\\" + idProducto + "\\" + imagen;
             try
             {
                 b = await System.IO.File.ReadAllBytesAsync(filePath);
@@ -213,16 +233,17 @@ namespace WellMarket.Controllers
             {
                 return StatusCode(500);
             }
-            
 
         }
 
+
+        // elimina imagen fisica y de base de datos
         [HttpDelete("imagen/{idEmpresa}/{idProducto}/{imagen}")]
         public async Task<IActionResult> EliminarImagenProducto(int idEmpresa, int idProducto, string imagen)
         {
             var response = new ResponseBase();
             var filee = Path.Combine(environment.ContentRootPath);
-            var filePath = filee + "\\" + "Content" + "\\" + idEmpresa + "\\" + idProducto + "\\" + imagen;
+            var filePath = filee + "\\" + "Content" + "\\" + "empresa" + "\\" + idEmpresa + "\\" + idProducto + "\\" + imagen;
             try
             {
 
@@ -249,6 +270,7 @@ namespace WellMarket.Controllers
 
         }
 
+        //obtiene un arreglo con una tabla de imagenes
         [HttpGet("imagen/{id}/ByProducto")]
         public async Task<ActionResult> ObtenerImagenesPorProducto(int id)
         {

@@ -91,10 +91,10 @@ namespace WellMarket.Controllers
                             return StatusCode(403, response);
                         }
                         var idEmpresa = response.id;
-                        var carpeta = filee + "\\" + "Content" + "\\" + response.id;
-                        var filePath = filee + "\\" + "Content" + "\\" + response.id + "\\" + "logo" +ext;
-                        var ruta = "\\" + "Content" + "\\" + response.id + "\\" + "logo" + ext;
-                        // empresa.urlLogo = ruta;
+                        var carpeta = filee + "\\" + "Content" + "\\" + "empresa" + "\\" + response.id;
+                        var filePath = filee + "\\" + "Content" + "\\" + "empresa" + "\\" + response.id + "\\" + "logo" +ext;
+                        var ruta = "\\" + "Content" + "\\" + "empresa" + "\\" + response.id + "\\" + "logo" + ext;
+                        var img = "logo" + ext;
 
 
                         if (!Directory.Exists(carpeta))
@@ -105,7 +105,7 @@ namespace WellMarket.Controllers
                         using (var stream = System.IO.File.Create(filePath))
                         {
                             await file.CopyToAsync(stream);
-                            response = await usuariorepo.actualizarLogo(idEmpresa, ruta);
+                            response = await usuariorepo.actualizarLogo(idEmpresa, ruta,img);
                             if (response.success == false)
                         {
                             return StatusCode(403, response);

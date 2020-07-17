@@ -17,7 +17,7 @@ namespace WellMarket.Repository
         Task<Response<Usuario>> ObtenerUsuarioPorId(int id);
         Task<ResponseBase> ActivarUsuario(int id, Boolean activo);
         Task<ResponseBase> RegistrarUsuarioEmpresa(Usuario user, Empresa empresa);
-        Task<ResponseBase> actualizarLogo(int id,string logo);
+        Task<ResponseBase> actualizarLogo(int id,string logo, string img);
     }
     public class UsuarioRepository : IUsuarioRepository
     {
@@ -250,7 +250,7 @@ namespace WellMarket.Repository
             return response;
         }
 
-        public async Task<ResponseBase> actualizarLogo(int id,string logo)
+        public async Task<ResponseBase> actualizarLogo(int id,string logo, string img)
         {
             var response = new ResponseBase();
             try
@@ -261,10 +261,11 @@ namespace WellMarket.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@idEmpresa", id);
+                        command.Parameters.AddWithValue("@imagen",img);
                         command.Parameters.AddWithValue("@url", logo);
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
-                        if (result > 0)
+                        if (result > 1)
                         {
                             response.success = true;
                             response.message = "Datos Actualizados Correctamente";
