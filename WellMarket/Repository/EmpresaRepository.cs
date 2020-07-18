@@ -16,6 +16,8 @@ namespace WellMarket.Repository
         Task<ResponseBase> cambiarestadoEmpresa(Empresa empresa);
         Task<Response<Dashboard>> obtenerDashboard(int idEmpresa, string fecha);
         Task<Response<Empresa>> obtenerEmpresaPorId(int idEmpresa);
+        Task<ResponseBase> actualizarLogo(Logo logo);
+        Task<ResponseBase> ActualizarDatosEmpresa(int idEmpresa,Empresa empresa);
     }
     public class EmpresaRepository:IEmpresa
     {
@@ -24,6 +26,78 @@ namespace WellMarket.Repository
         public EmpresaRepository(IConnection con)
         {
             this.con = con;
+        }
+
+        public async Task<ResponseBase> ActualizarDatosEmpresa(int idEmpresa, Empresa empresa)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Seguridad.spActualizarEmpresaDatos", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa",idEmpresa);
+                        command.Parameters.AddWithValue("@direccion",empresa.direccion);
+                        command.Parameters.AddWithValue("@rfc",empresa.rfc);
+                        command.Parameters.AddWithValue("@encargado",empresa.encargado);
+                        command.Parameters.AddWithValue("@telefono",empresa.telefono);
+                        command.Parameters.AddWithValue("@idRolEmpresa",empresa.idRolEmpresa);
+                        command.Parameters.AddWithValue("@vision",empresa.vision);
+                        command.Parameters.AddWithValue("@mision",empresa.mision);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.success = true;
+                            response.message = "Datos actualizados correctamente";
+                            response.id = idEmpresa;
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<ResponseBase> actualizarLogo(Logo logo)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Seguridad.spActualizarLogoEmpresaTableLogo", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idLogo", logo.idLogo);
+                        command.Parameters.AddWithValue("@idEmpresa", logo.idEmpresa);
+                        command.Parameters.AddWithValue("@imagen", logo.imagen);
+                        command.Parameters.AddWithValue("@url", logo.url);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.success = true;
+                            response.message = "Datos Actualizados";
+                            response.id = logo.idLogo;
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
         }
 
         public async Task<ResponseBase> cambiarestadoEmpresa(Empresa empresa)
