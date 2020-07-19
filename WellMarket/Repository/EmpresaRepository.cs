@@ -47,6 +47,10 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@idRolEmpresa",empresa.idRolEmpresa);
                         command.Parameters.AddWithValue("@vision",empresa.vision);
                         command.Parameters.AddWithValue("@mision",empresa.mision);
+                        command.Parameters.AddWithValue("@horaInicio",empresa.horaInicio);
+                        command.Parameters.AddWithValue("@horaCerrado",empresa.horaCerrado);
+                        command.Parameters.AddWithValue("@diaInicio",empresa.diaInicio);
+                        command.Parameters.AddWithValue("@diaCerrado",empresa.diaCerrado);
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
                         if (result > 0)
@@ -202,6 +206,10 @@ namespace WellMarket.Repository
                                 empresa.nombreRol = reader.GetString("nombreRol");
                                 empresa.fecha = reader.GetString("fecha");
                                 empresa.abierto = reader.GetBoolean("abierto");
+                                empresa.horaInicio = reader.GetString("horaInicio");
+                                empresa.horaCerrado = reader.GetString("horaCerrado");
+                                empresa.diaInicio = reader.GetString("diaInicio");
+                                empresa.diaCerrado = reader.GetString("diaCerrado");
                                 empresa.logo = new Logo
                                 {
                                     idLogo = reader.GetInt32("idLogo"),

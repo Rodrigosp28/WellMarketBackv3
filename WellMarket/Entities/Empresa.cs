@@ -15,6 +15,10 @@ namespace WellMarket.Entities
         public string vision { get; set; }
         public string mision { get; set; }
         public string telefono { get; set; }
+        public string horaInicio { get; set; }
+        public string horaCerrado { get; set; }
+        public string diaInicio { get; set; }
+        public string diaCerrado { get; set; }
         public string urlLogo { get; set; }
         public int idRolEmpresa { get; set; }
         public string nombreRol { get; set; }

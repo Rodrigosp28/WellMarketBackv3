@@ -21,19 +21,35 @@ namespace WellMarket.Controllers
             this.mesa = mesa;
         }
 
-        [HttpGet("{idEmpresa}")]
-        public async Task<ActionResult> ObtenerMesas(int idEmpresa)
+        [HttpGet("{idEmpresa}/{idTipo}")]
+        public async Task<ActionResult> ObtenerMesas(int idEmpresa, int idTipo)
         {
             var response = new Response<List<Mesa>>();
             try
             {
-                response = await mesa.ObtenerMesasPorEmpresa(idEmpresa);
+                response = await mesa.ObtenerMesasPorEmpresa(idEmpresa, idTipo);
             }
             catch(Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;
                 return StatusCode(500, response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("tipoMesa")]
+        public async Task<ActionResult> ObtenerTipoMesa()
+        {
+            var response = new Response<List<TipoMesa>>();
+            try
+            {
+                response = await this.mesa.ObtenerTiposMesa();
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
             }
             return Ok(response);
         }

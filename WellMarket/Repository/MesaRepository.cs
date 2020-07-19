@@ -13,7 +13,8 @@ namespace WellMarket.Repository
     public interface IMesa
     {
         Task<ResponseBase> InsertarMesa(Mesa mesa);
-        Task<Response<List<Mesa>>>ObtenerMesasPorEmpresa(int idEmpresa);
+        Task<Response<List<Mesa>>>ObtenerMesasPorEmpresa(int idEmpresa, int idTipo);
+        Task<Response<List<TipoMesa>>> ObtenerTiposMesa();
     }
     public class MesaRepository:IMesa
     {
@@ -39,6 +40,7 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@nombre",mesa.nombre);
                         command.Parameters.AddWithValue("@descripcion",mesa.descripcion);
                         command.Parameters.AddWithValue("@idEmpresa",mesa.idEmpresa);
+                        command.Parameters.AddWithValue("@idTipoMesa",mesa.idTipoMesa);
                         command.Parameters["@idMesa"].Direction = ParameterDirection.Output;
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
@@ -59,7 +61,7 @@ namespace WellMarket.Repository
             return response;
         }
 
-        public async Task<Response<List<Mesa>>> ObtenerMesasPorEmpresa(int idEmpresa)
+        public async Task<Response<List<Mesa>>> ObtenerMesasPorEmpresa(int idEmpresa, int idTipo)
         {
             var response = new Response<List<Mesa>>();
             try
@@ -70,6 +72,7 @@ namespace WellMarket.Repository
                     {
                         command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@idTipo", idTipo);
                         connection.Open();
                         using(var reader1 = await command.ExecuteReaderAsync())
                         {
@@ -82,7 +85,8 @@ namespace WellMarket.Repository
                                 mesa.descripcion = reader1.GetString("descripcion");
                                 mesa.idEmpresa = reader1.GetInt32("idEmpresa");
                                 mesa.ocupado = reader1.GetBoolean("ocupado");
-                                using(var command2 = new SqlCommand("Reporte.spObtenerMesasOcupadas", connection))
+                                mesa.idTipoMesa = reader1.GetInt32("idTipoMesa");
+                                using (var command2 = new SqlCommand("Reporte.spObtenerMesasOcupadas", connection))
                                 {
                                     command2.CommandType = CommandType.StoredProcedure;
                                     command2.Parameters.AddWithValue("@idMesa", mesa.idMesa);
@@ -111,6 +115,44 @@ namespace WellMarket.Repository
                 }
             }
             catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<TipoMesa>>> ObtenerTiposMesa()
+        {
+            var response = new Response<List<TipoMesa>>();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Catalogos.spObtenerTipoMesa", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        connection.Open();
+                        using(var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<TipoMesa>();
+                            while (reader.Read())
+                            {
+                                list.Add(new TipoMesa
+                                {
+                                    idTipoMesa = reader.GetInt32("idTipoMesa"),
+                                    descripcion = reader.GetString("descripcion")
+                                });
+                            }
+                            response.success = true;
+                            response.message = "datos obtenidos correctamente";
+                            response.Data = list;
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;
