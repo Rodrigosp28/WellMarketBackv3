@@ -44,9 +44,9 @@ namespace WellMarket.Controllers
         }
 
         [HttpGet("test")]
-        public async Task<ActionResult> test()
-        {
-            return Ok("correcto");
+        public async Task<ActionResult> test([FromQuery]string id, [FromQuery]string name)
+        {   
+            return Ok(name);
         }
 
         [HttpPost("test")]

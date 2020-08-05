@@ -38,6 +38,22 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        [HttpGet("ticket/{id}/byId")]
+        public async Task<ActionResult>ObtenerTicketPorId(int id)
+        {
+            var response = new Response<Ticket>();
+            try
+            {
+                response = await this.ventas.ObtenerTicketIdD(id);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpPost("ticket/today")]
         public async Task<ActionResult>ObtenerTicketsdelDia([FromBody]EmpresaFecha ef)
         {
@@ -45,6 +61,39 @@ namespace WellMarket.Controllers
             try
             {
                 response = await this.ventas.ObtenerTicketsPorIdEmpresa(ef.idEmpresa, ef.fecha);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("ticket/intervalo")]
+        public async Task<ActionResult>ObtenerTicketsPorIntervalo([FromBody]IntervaloTicket i)
+        {
+            var response = new Response<List<Ticket>>();
+            try
+            {
+                response = await this.ventas.ObtenerTicketsPorIntervalo(i);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("ticket/month")]
+        public async Task<ActionResult>ObtenerTicketsPorMesa([FromQuery]int idEmpresa,[FromQuery]int mes)
+        {
+            var response = new Response<List<Ticket>>();
+            try
+            {
+                response = await this.ventas.ObtenerTicketsPorMes(idEmpresa, mes);
             }
             catch(Exception ex)
             {

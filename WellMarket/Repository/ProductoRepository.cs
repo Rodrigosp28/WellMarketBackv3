@@ -286,26 +286,28 @@ namespace WellMarket.Repository
                             var list = new List<Producto>();
                             while (reader.Read())
                             {
-                                list.Add(new Producto
+                                var responseT = new Response<List<Imagenes_Producto>>();
+                                var producto = new Producto();
+                                producto.idProducto = reader.GetInt32("idProducto");
+                                producto.nombre = reader.GetString("nombre");
+                                producto.descripcion = reader.GetString("descripcion");
+                                producto.precio = reader.GetDouble("precio");
+                                producto.idDisponible = reader.GetInt32("idDisponible");
+                                producto.idEmpresa = reader.GetInt32("idEmpresa");
+                                producto.disponible = new disponible_producto
                                 {
-                                    idProducto = reader.GetInt32("idProducto"),
-                                    nombre = reader.GetString("nombre"),
-                                    descripcion = reader.GetString("descripcion"),
-                                    precio = reader.GetDouble("precio"),
                                     idDisponible = reader.GetInt32("idDisponible"),
-                                    disponible = new disponible_producto
-                                    {
-                                        idDisponible = reader.GetInt32("idDisponible"),
-                                        descripcion = reader.GetString("disponible")
-                                    },
-                                    idEmpresa = reader.GetInt32("idEmpresa"),
+                                    descripcion = reader.GetString("disponible")
+                                };
+                                producto.idCategoria = reader.GetInt32("idCategoria");
+                                producto.categoria = new Categoria_Producto
+                                {
                                     idCategoria = reader.GetInt32("idCategoria"),
-                                    categoria = new Categoria_Producto
-                                    {
-                                        idCategoria = reader.GetInt32("idCategoria"),
-                                        descripcion = reader.GetString("categoria")
-                                    }
-                                });
+                                    descripcion = reader.GetString("categoria")
+                                };
+                                responseT = await this.ObtenerImagenesPorProducto(producto.idProducto);
+                                producto.imagenes = responseT.Data;
+                                list.Add(producto);
                             }
                             response.success = true;
                             response.Data = list;

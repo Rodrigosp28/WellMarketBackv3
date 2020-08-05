@@ -17,5 +17,6 @@ namespace WellMarket.Entities
         public int idEmpresa { get; set; }
         public int idCategoria { get; set; }
         public Categoria_Producto categoria { get; set; }
+        public List<Imagenes_Producto> imagenes { get; set; }
     }
 }

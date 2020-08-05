@@ -18,7 +18,7 @@ namespace WellMarket.Entities
         public int idEstatus { get; set; }
         public string nombreEstatus { get; set; }
         public int idUsuario { get; set; }
-        public string nombreusuario { get; set; }
+        public string nombreUsuario { get; set; }
         public int idEmpresa { get; set; }
         public Boolean activo{get;set;}
         public double pago { get; set; }

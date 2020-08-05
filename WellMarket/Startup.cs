@@ -48,6 +48,9 @@ namespace WellMarket
             services.AddSingleton<IEstatusT, EstatusTicketRepository>();
             services.AddSingleton<IEmpresa, EmpresaRepository>();
             services.AddSingleton<IMesa, MesaRepository>();
+            services.AddSingleton<IGasto, GastoRepository>();
+            services.AddSingleton<IIngreso, IngresoRepository>();
+            services.AddSingleton<IReporte, ReporteRepository>();
 
             #endregion
 

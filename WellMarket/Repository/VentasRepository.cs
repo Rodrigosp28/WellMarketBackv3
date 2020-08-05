@@ -24,8 +24,11 @@ namespace WellMarket.Repository
         Task<ResponseBase> CancelarTicket(CerrarTicket ct);
         Task<ResponseBase> EliminarVentaTicket(int idVenta);
         Task<Ticket> ObtenerTicketId(int idTicket);
+        Task<Response<Ticket>> ObtenerTicketIdD(int idTicket);
         Task<Mesa> ObtenerMesaIdTicket(int idTicket);
         Task<Response<List<Ticket>>> ObtenerTicketsPorIdEmpresa(int idEmpresa, string fecha);
+        Task<Response<List<Ticket>>> ObtenerTicketsPorMes(int idEmpresa, int mes);
+        Task<Response<List<Ticket>>> ObtenerTicketsPorIntervalo(IntervaloTicket i);
     }
     public class VentasRepository : IVentas
     {
@@ -370,6 +373,57 @@ namespace WellMarket.Repository
             }
         }
 
+        public async Task<Response<Ticket>> ObtenerTicketIdD(int idTicket)
+        {
+            var response = new Response<Ticket>();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Reporte.spObtenerTicketPorId", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idTicket", idTicket);
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var ticket = new Ticket();
+                            while (reader.Read())
+                            {
+                                ticket.idTicket = reader.GetInt32("idTicket");
+                                ticket.fecha = reader.GetString("fecha");
+                                ticket.hora = reader.GetString("hora");
+                                ticket.horaEntrada = reader.GetString("horaEntrada");
+                                ticket.horaSalida = reader.GetString("horaSalida");
+                                ticket.idEstatus = reader.GetInt32("idEstatus");
+                                ticket.total = reader.GetDouble("total");
+                                ticket.descripcion = reader.GetString("descripcion");
+                                ticket.comentario = reader.GetString("comentario");
+                                ticket.idEstatus = reader.GetInt32("idEstatus");
+                                ticket.nombreEstatus = reader.GetString("nombreEstatus");
+                                ticket.idUsuario = reader.GetInt32("idUsuario");
+                                ticket.nombreUsuario = reader.GetString("nombreUsuario");
+                                ticket.idEmpresa = reader.GetInt32("idEmpresa");
+                                ticket.activo = reader.GetBoolean("activo");
+                                ticket.pago = reader.GetDouble("pago");
+                                ticket.cambio = reader.GetDouble("cambio");
+                            }
+                            response.success = true;
+                            response.message = "datos obtenidos correctamente";
+                            response.Data = ticket;
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
         public async Task<Response<List<Ticket>>> ObtenerTicketsPorIdEmpresa(int idEmpresa, string fecha)
         {
             var response = new Response<List<Ticket>>();
@@ -377,7 +431,7 @@ namespace WellMarket.Repository
             {
                 using(var connection = new SqlConnection(con.getConnection()))
                 {
-                    using(var command = new SqlCommand("Reporte.spObtenerTicketPorIdEmpresa", connection))
+                    using(var command = new SqlCommand("Reporte.spObtenerTicketsDia", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.Clear();
@@ -394,16 +448,12 @@ namespace WellMarket.Repository
                                 ticket.idTicket = reader.GetInt32("idTicket");
                                 ticket.fecha = reader.GetString("fecha");
                                 ticket.hora = reader.GetString("hora");
-                                ticket.horaEntrada = reader.GetString("horaEntrada");
-                                ticket.horaSalida = reader.GetString("horaSalida");
                                 ticket.total = reader.GetDouble("total");
                                 ticket.descripcion = reader.GetString("descripcion");
                                 ticket.comentario = reader.GetString("comentario");
                                 ticket.idEstatus = reader.GetInt32("idEstatus");
                                 ticket.nombreEstatus = reader.GetString("nombreEstatus");
                                 ticket.idUsuario = reader.GetInt32("idUsuario");
-                                ticket.nombreusuario = reader.GetString("nombreUsuario");
-                                ticket.idEmpresa = reader.GetInt32("idEmpresa");
                                 ticket.activo = reader.GetBoolean("activo");
                                 ticket.pago = reader.GetDouble("pago");
                                 ticket.cambio = reader.GetDouble("cambio");
@@ -418,6 +468,111 @@ namespace WellMarket.Repository
                 }
             }
             catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Ticket>>> ObtenerTicketsPorIntervalo(IntervaloTicket i)
+        {
+            var response = new Response<List<Ticket>>();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spObtenerTicketsIntervalo", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", i.idEmpresa);
+                        command.Parameters.AddWithValue("@fechaInicio", i.fechaInicio);
+                        command.Parameters.AddWithValue("@fechaFinal", i.fechaFinal);
+                        command.Parameters.AddWithValue("@horaInicio", i.horaInicio);
+                        command.Parameters.AddWithValue("@horaFinal", i.horaFinal);
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Ticket>();
+
+                            while (reader.Read())
+                            {
+                                var ticket = new Ticket();
+                                ticket.idTicket = reader.GetInt32("idTicket");
+                                ticket.fecha = reader.GetString("fecha");
+                                ticket.hora = reader.GetString("hora");
+                                ticket.total = reader.GetDouble("total");
+                                ticket.descripcion = reader.GetString("descripcion");
+                                ticket.comentario = reader.GetString("comentario");
+                                ticket.idEstatus = reader.GetInt32("idEstatus");
+                                ticket.nombreEstatus = reader.GetString("nombreEstatus");
+                                ticket.idUsuario = reader.GetInt32("idUsuario");
+                                ticket.activo = reader.GetBoolean("activo");
+                                ticket.pago = reader.GetDouble("pago");
+                                ticket.cambio = reader.GetDouble("cambio");
+                                list.Add(ticket);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenidos Correctamente";
+                            response.Data = list;
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Ticket>>> ObtenerTicketsPorMes(int idEmpresa, int mes)
+        {
+            var response = new Response<List<Ticket>>();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spObtenerTicketsMes", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@mes", mes);
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Ticket>();
+
+                            while (reader.Read())
+                            {
+                                var ticket = new Ticket();
+                                ticket.idTicket = reader.GetInt32("idTicket");
+                                ticket.fecha = reader.GetString("fecha");
+                                ticket.hora = reader.GetString("hora");
+                                ticket.total = reader.GetDouble("total");
+                                ticket.descripcion = reader.GetString("descripcion");
+                                ticket.comentario = reader.GetString("comentario");
+                                ticket.idEstatus = reader.GetInt32("idEstatus");
+                                ticket.nombreEstatus = reader.GetString("nombreEstatus");
+                                ticket.idUsuario = reader.GetInt32("idUsuario");
+                                ticket.activo = reader.GetBoolean("activo");
+                                ticket.pago = reader.GetDouble("pago");
+                                ticket.cambio = reader.GetDouble("cambio");
+                                list.Add(ticket);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenidos Correctamente";
+                            response.Data = list;
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;
