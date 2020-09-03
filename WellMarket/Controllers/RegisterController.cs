@@ -129,6 +129,22 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        [HttpPost("user")]
+        public async Task<ActionResult>RegistrarUsuario(Usuario user)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.usuariorepo.RegistrarUsuario(user);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpGet]
         public async Task<ActionResult> prueba()
         {

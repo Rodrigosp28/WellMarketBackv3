@@ -91,6 +91,22 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        [HttpGet("{id}/ByEmpresa/disponibles/pag")]
+        public async Task<ActionResult> ObtenerProductosDisponiblesPorEmpresaPag(int id,[FromQuery]int pagina)
+        {
+            var response = new Response<List<Producto>>();
+            try
+            {
+                response = await this.producto.ObtenerProductoDisponiblePorEmpresaPag(id,pagina);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult> ObtenerProductosPorId(int id)
         {
@@ -139,13 +155,29 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> eliminarProducto(int id)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.producto.EliminarProducto(id);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         // sube imagen fisica y la registra en la base de datos
         [HttpPost("imagen")]
         public async Task<ActionResult> ImagenProducto(IFormCollection formdata)
         {
             var response = new ResponseBase();
             var imgp = new Imagenes_Producto();
-            List<string> fileExtension = new List<string>() { ".png", ".jpg", "jpeg" };
+            List<string> fileExtension = new List<string>() { ".png", ".jpg", ".jpeg" };
 
             try
             {

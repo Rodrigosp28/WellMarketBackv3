@@ -13,6 +13,7 @@ namespace WellMarket.Entities
         public int idEmpresa { get; set; }
         public Boolean ocupado { get; set; }
         public int idTipoMesa { get; set; }
+        public string descripcionTipo { get; set; }
         public List<MesaTicket> mesas { get; set; }
     }
 }

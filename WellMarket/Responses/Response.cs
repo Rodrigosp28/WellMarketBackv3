@@ -8,5 +8,6 @@ namespace WellMarket.Responses
     public class Response<T>:ResponseBase
     {
         public T Data { get; set; }
+        public int paginas { get; set; }
     }
 }

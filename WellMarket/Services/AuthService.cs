@@ -57,6 +57,12 @@ namespace WellMarket.Services
                 AuthResponse.messages = "Usuario no implicito en esta area";
                 return AuthResponse;
             }
+            if(_user.verificado==false)
+            {
+                AuthResponse.success = false;
+                AuthResponse.messages = "Usuario no verificado";
+                return AuthResponse;
+            }
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(this.appSettings.Secret);

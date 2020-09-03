@@ -29,6 +29,7 @@ namespace WellMarket.Repository
         Task<Response<List<Ticket>>> ObtenerTicketsPorIdEmpresa(int idEmpresa, string fecha);
         Task<Response<List<Ticket>>> ObtenerTicketsPorMes(int idEmpresa, int mes);
         Task<Response<List<Ticket>>> ObtenerTicketsPorIntervalo(IntervaloTicket i);
+        Task<ResponseBase> ActualizarVenta(Venta v);
     }
     public class VentasRepository : IVentas
     {
@@ -37,6 +38,40 @@ namespace WellMarket.Repository
         public VentasRepository(IConnection con)
         {
             this.con = con;
+        }
+
+        public async Task<ResponseBase> ActualizarVenta(Venta v)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spActualizarVenta", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idVenta", v.idVenta);
+                        command.Parameters.AddWithValue("@idProducto", v.idProducto);
+                        command.Parameters.AddWithValue("@cantidad", v.cantidad);
+                        command.Parameters.AddWithValue("@total", v.total);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.success = true;
+                            response.message = "Venta actualizada Correctamente";
+                            response.id = v.idVenta;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
         }
 
         public async Task<ResponseBase> CancelarTicket(CerrarTicket ct)
@@ -56,6 +91,7 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@descripcion", ct.descripcion);
                         command.Parameters.AddWithValue("@comentario", ct.comentario);
                         command.Parameters.AddWithValue("@idMesa", ct.idMesa);
+                        command.Parameters.AddWithValue("@fechaSalida", ct.fechaSalida);
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
                         if (result > 2)
@@ -100,6 +136,8 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@pago",ct.pago);
                         command.Parameters.AddWithValue("@cambio",ct.cambio);
                         command.Parameters.AddWithValue("@idMesa",ct.idMesa);
+                        command.Parameters.AddWithValue("@fechaSalida", ct.fechaSalida);
+
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
                         if (result > 2)
@@ -393,6 +431,7 @@ namespace WellMarket.Repository
                             {
                                 ticket.idTicket = reader.GetInt32("idTicket");
                                 ticket.fecha = reader.GetString("fecha");
+                                ticket.fechaSalida = reader.GetString("fechaSalida");
                                 ticket.hora = reader.GetString("hora");
                                 ticket.horaEntrada = reader.GetString("horaEntrada");
                                 ticket.horaSalida = reader.GetString("horaSalida");
@@ -611,9 +650,11 @@ namespace WellMarket.Repository
                                     descripcion=reader.GetString("descripcion"),
                                     precio= reader.GetDouble("precio"),
                                     idEmpresa = reader.GetInt32("idEmpresa"),
-                                    idCategoria=reader.GetInt32("idCategoria")
+                                    idCategoria=reader.GetInt32("idCategoria"),
+                                    paraCocina=reader.GetBoolean("paraCocina")
                                 };
                                 ventar.cantidad = reader.GetInt32("cantidad");
+                                ventar.enCocina = reader.GetBoolean("enCocina");
                                 ventar.total = reader.GetDouble("total");
                                 list.Add(ventar);
                             }

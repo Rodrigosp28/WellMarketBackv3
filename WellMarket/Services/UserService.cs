@@ -54,6 +54,7 @@ namespace WellMarket.Services
                                 user.activo = reader.GetBoolean("activo");
                                 user.idTipoUsuario = reader.GetInt32("idTipoUsuario");
                                 user.idEmpresa = reader.GetInt32("idEmpresa");
+                                user.verificado = reader.GetBoolean("verificado");
                             }
                             return user;
                         }

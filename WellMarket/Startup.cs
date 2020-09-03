@@ -51,6 +51,7 @@ namespace WellMarket
             services.AddSingleton<IGasto, GastoRepository>();
             services.AddSingleton<IIngreso, IngresoRepository>();
             services.AddSingleton<IReporte, ReporteRepository>();
+            services.AddSingleton<ICocina, CocinaRepository>();
 
             #endregion
 

@@ -21,6 +21,7 @@ namespace WellMarket.Controllers
             this.mesa = mesa;
         }
 
+        //obtiene mesas depende su tipo por idEmpresa y idtipo
         [HttpGet("{idEmpresa}/{idTipo}")]
         public async Task<ActionResult> ObtenerMesas(int idEmpresa, int idTipo)
         {
@@ -37,7 +38,8 @@ namespace WellMarket.Controllers
             }
             return Ok(response);
         }
-
+            
+        //obtiene el catalogo tipo de mesas
         [HttpGet("tipoMesa")]
         public async Task<ActionResult> ObtenerTipoMesa()
         {
@@ -54,6 +56,7 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        //inserta una mesa a una empresa
         [HttpPost]
         public async Task<ActionResult> InsertarMesas([FromBody]Mesa mesa)
         {
@@ -69,6 +72,57 @@ namespace WellMarket.Controllers
                 return StatusCode(500, response);
             }
             return Ok(response);
+        }
+
+        //actualiza el nombre de la mesa
+        [HttpPut("{idMesa}")]
+        public async Task<ResponseBase>ActualizarMesa(int idMesa,[FromQuery]string nombre)
+        {
+            ResponseBase response = new ResponseBase();
+            try
+            {
+                response = await this.mesa.ActualizarNombreMesa(idMesa, nombre);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        //elimina de forma logica la mesa
+        [HttpDelete("{idMesa}")]
+        public async Task<ResponseBase>EliminarMesa(int idMesa)
+        {
+            ResponseBase response = new ResponseBase();
+            try
+            {
+                response = await this.mesa.EliminarMesa(idMesa);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        //obtiene todas las mesas de una empresa
+        [HttpGet("{idEmpresa}/all")]
+        public async Task<Response<List<Mesa>>>ObtenerMesasAll(int idEmpresa)
+        {
+            Response<List<Mesa>> response = new Response<List<Mesa>>();
+            try
+            {
+                response = await this.mesa.ObtenerMesasPorEmpresaAll(idEmpresa);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
         }
     }
 }

@@ -8,6 +8,7 @@ namespace WellMarket.Entities.Request
     public class CerrarTicket
     {
         public int idTicket { get; set; }
+        public string fechaSalida { get; set; }
         public string horaSalida { get; set; }
         public double total { get; set; }
         public string descripcion { get; set; }

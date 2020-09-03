@@ -12,6 +12,7 @@ namespace WellMarket.Entities
         public int idProducto { get; set; }
         public Producto producto { get; set; }
         public int cantidad { get; set; }
+        public Boolean enCocina { get; set; }
         public double total { get; set; }
     }
 }

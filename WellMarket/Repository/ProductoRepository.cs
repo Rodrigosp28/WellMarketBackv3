@@ -22,7 +22,9 @@ namespace WellMarket.Repository
         Task<Response<List<Imagenes_Producto>>> ObtenerImagenesPorProducto(int id);
         Task<ResponseBase> EliminarImagenProducto(int idEmpresa, string imagen);
         Task<Response<List<Producto>>> ObtenerProductoDisponiblePorEmpresa(int idEmpresa);
+        Task<Response<List<Producto>>> ObtenerProductoDisponiblePorEmpresaPag(int idEmpresa, int pag);
         Task<Response<List<PMasVendidos>>> ObtenerCincoProductosMasVendidos(int idEmpresa, string fecha);
+        Task<ResponseBase> EliminarProducto(int idProducto);
 
     }
     public class ProductoRepository: IProducto
@@ -50,6 +52,7 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@precio", producto.precio);
                         command.Parameters.AddWithValue("@idDisponible", producto.idDisponible);
                         command.Parameters.AddWithValue("@idCategoria", producto.idCategoria);
+                        command.Parameters.AddWithValue("@paraCocina", producto.paraCocina);
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
                         if (result > 0)
@@ -92,6 +95,39 @@ namespace WellMarket.Repository
                             response.id = idEmpresa;
                             response.success = true;
                             response.message = "Imagen Eliminada Correctamente";
+                        }
+
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<ResponseBase> EliminarProducto(int idProducto)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spEliminarProducto", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idProducto", idProducto);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.id = idProducto;
+                            response.success = true;
+                            response.message = "Dato eliminado Correctamente";
                         }
 
 
@@ -162,6 +198,7 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@idDisponible", producto.idDisponible);
                         command.Parameters.AddWithValue("@idEmpresa", producto.idEmpresa);
                         command.Parameters.AddWithValue("@idCategoria", producto.idCategoria);
+                        command.Parameters.AddWithValue("@paraCocina", producto.paraCocina);
                         command.Parameters["@idProducto"].Direction = ParameterDirection.Output;
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
@@ -292,6 +329,7 @@ namespace WellMarket.Repository
                                 producto.nombre = reader.GetString("nombre");
                                 producto.descripcion = reader.GetString("descripcion");
                                 producto.precio = reader.GetDouble("precio");
+                                producto.paraCocina = reader.GetBoolean("paraCocina");
                                 producto.idDisponible = reader.GetInt32("idDisponible");
                                 producto.idEmpresa = reader.GetInt32("idEmpresa");
                                 producto.disponible = new disponible_producto
@@ -313,6 +351,66 @@ namespace WellMarket.Repository
                             response.Data = list;
                             response.message = "Datos Obtenidos Correctamente";
                         }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+        public async Task<Response<List<Producto>>> ObtenerProductoDisponiblePorEmpresaPag(int idEmpresa,int pag)
+        {
+            var response = new Response<List<Producto>>();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spObtenerProductosDisponiblePorIdEmpresaPag", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@paginasTotal", 0);
+                        command.Parameters.AddWithValue("@pagina", pag);
+                        command.Parameters["@paginasTotal"].Direction = ParameterDirection.Output;
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Producto>();
+                            while (reader.Read())
+                            {
+                                var responseT = new Response<List<Imagenes_Producto>>();
+                                var producto = new Producto();
+                                producto.idProducto = reader.GetInt32("idProducto");
+                                producto.nombre = reader.GetString("nombre");
+                                producto.descripcion = reader.GetString("descripcion");
+                                producto.precio = reader.GetDouble("precio");
+                                producto.paraCocina = reader.GetBoolean("paraCocina");
+                                producto.idDisponible = reader.GetInt32("idDisponible");
+                                producto.idEmpresa = reader.GetInt32("idEmpresa");
+                                producto.disponible = new disponible_producto
+                                {
+                                    idDisponible = reader.GetInt32("idDisponible"),
+                                    descripcion = reader.GetString("disponible")
+                                };
+                                producto.idCategoria = reader.GetInt32("idCategoria");
+                                producto.categoria = new Categoria_Producto
+                                {
+                                    idCategoria = reader.GetInt32("idCategoria"),
+                                    descripcion = reader.GetString("categoria")
+                                };
+                                responseT = await this.ObtenerImagenesPorProducto(producto.idProducto);
+                                producto.imagenes = responseT.Data;
+                                list.Add(producto);
+                            }
+                            response.success = true;
+                            response.Data = list;
+                            response.message = "Datos Obtenidos Correctamente";
+                        }
+                            response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
                     }
                 }
             }
@@ -348,7 +446,8 @@ namespace WellMarket.Repository
                                     nombre = reader.GetString("nombre"),
                                     descripcion = reader.GetString("descripcion"),
                                     precio = reader.GetDouble("precio"),
-                                    idDisponible = reader.GetInt32("idDisponible"),
+                                    paraCocina = reader.GetBoolean("paraCocina"),
+                                idDisponible = reader.GetInt32("idDisponible"),
                                     disponible = new disponible_producto
                                     {
                                         idDisponible=reader.GetInt32("idDisponible"),
@@ -402,6 +501,7 @@ namespace WellMarket.Repository
                                     nombre = reader.GetString("nombre"),
                                     descripcion = reader.GetString("descripcion"),
                                     precio = reader.GetDouble("precio"),
+                                    paraCocina = reader.GetBoolean("paraCocina"),
                                     idDisponible = reader.GetInt32("idDisponible"),
                                     disponible = new disponible_producto
                                     {
@@ -456,6 +556,7 @@ namespace WellMarket.Repository
                                     nombre = reader.GetString("nombre"),
                                     descripcion = reader.GetString("descripcion"),
                                     precio = reader.GetDouble("precio"),
+                                    paraCocina = reader.GetBoolean("paraCocina"),
                                     idDisponible = reader.GetInt32("idDisponible"),
                                     disponible = new disponible_producto
                                     {

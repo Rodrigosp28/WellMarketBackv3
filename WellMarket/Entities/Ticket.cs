@@ -9,6 +9,7 @@ namespace WellMarket.Entities
     {
         public int idTicket { get; set; }
         public string fecha { get; set; }
+        public string fechaSalida { get; set; }
         public string hora { get; set; }
         public string horaEntrada { get; set; }
         public string horaSalida { get; set; }

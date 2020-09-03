@@ -205,5 +205,21 @@ namespace WellMarket.Controllers
 
         }
 
+        [HttpPut("ticket/venta/{idVenta}")]
+        public async Task<ActionResult> ActualizarVenta([FromBody]Venta v)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.ventas.ActualizarVenta(v);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+
+        }
     }
 }

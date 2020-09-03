@@ -18,6 +18,7 @@ namespace WellMarket.Repository
         Task<ResponseBase> ActivarUsuario(int id, Boolean activo);
         Task<ResponseBase> RegistrarUsuarioEmpresa(Usuario user, Empresa empresa);
         Task<ResponseBase> actualizarLogo(int id,string logo, string img);
+        Task<ResponseBase> RegistrarUsuario(Usuario user);
     }
     public class UsuarioRepository : IUsuarioRepository
     {
@@ -63,6 +64,48 @@ namespace WellMarket.Repository
                 }
             }
             catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<ResponseBase> RegistrarUsuario(Usuario user)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(this.con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spRegistrarUsuario", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idUsuario", 0);
+                        command.Parameters.AddWithValue("@usuario", user.usuario);
+                        command.Parameters.AddWithValue("@password", user.password);
+                        command.Parameters.AddWithValue("@nombre", user.nombre);
+                        command.Parameters.AddWithValue("@apellido", user.apellido);
+                        command.Parameters.AddWithValue("@direccion", user.direccion);
+                        command.Parameters.AddWithValue("@telefono", user.telefono);
+                        command.Parameters.AddWithValue("@idZona", user.idZona);
+                        command.Parameters.AddWithValue("@idRol", 2);
+                        command.Parameters["@idUsuario"].Direction = ParameterDirection.Output;
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.id = Convert.ToInt32(command.Parameters["@idUsuario"].Value);
+                            response.success = true;
+                            response.message = "Datos Insertados Correctamente";
+                        }
+
+
+                    }
+                }
+            }
+            catch (Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;
