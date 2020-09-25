@@ -14,6 +14,7 @@ namespace WellMarket.Entities
         public string apellido { get; set; }
         public string direccion { get; set; }
         public string telefono { get; set; }
+        public string correo { get; set; }
         public int idZona { get; set; }
         public int idRol { get; set; }
         public string fecha { get; set; }

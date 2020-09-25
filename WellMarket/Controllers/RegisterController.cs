@@ -18,6 +18,7 @@ using WellMarket.Entities;
 using WellMarket.Helpers;
 using WellMarket.Repository;
 using WellMarket.Responses;
+using WellMarket.Services;
 
 namespace WellMarket.Controllers
 {
@@ -28,12 +29,14 @@ namespace WellMarket.Controllers
         private readonly IConnection con;
         private readonly IHostingEnvironment environment;
         private readonly IUsuarioRepository usuariorepo;
+        private readonly ICorreo correo;
 
-        public RegisterController(IConnection con, IHostingEnvironment environment, IUsuarioRepository usuariorepo)
+        public RegisterController(IConnection con, IHostingEnvironment environment, IUsuarioRepository usuariorepo,ICorreo _correo)
         {
             this.con = con;
             this.environment = environment;
             this.usuariorepo = usuariorepo;
+            this.correo = _correo;
         }
 
         [HttpPost]
@@ -129,13 +132,27 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        //registra al usuario de la pagina desde la direccion register
         [HttpPost("user")]
-        public async Task<ActionResult>RegistrarUsuario(Usuario user)
+        public async Task<ActionResult>RegistrarUsuario(Usuario user,[FromQuery]string codVerificacion)
         {
             var response = new ResponseBase();
+            var response2 = new ResponseBase();
             try
             {
-                response = await this.usuariorepo.RegistrarUsuario(user);
+                response = await this.usuariorepo.RegistrarUsuario(user, codVerificacion);
+                if (response.success == false)
+                {
+                    response.success = false;
+                    return Ok(response);
+                }
+                response2 = await this.correo.VerificacionCorreo(user.correo);
+                if (response2.success == false)
+                {
+                    response.success = true;
+                    response.message = $"Usuario Registrado correctamente.....Fallo el envio de correo de verificacion {response2.message}";
+                }
+
             }
             catch(Exception ex)
             {
@@ -145,6 +162,22 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        [HttpGet("verificacion")]
+        public async Task<ActionResult>VerificarCorreo([FromQuery]string email)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.correo.VerificacionCorreo(email);
+
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
         [HttpGet]
         public async Task<ActionResult> prueba()
         {

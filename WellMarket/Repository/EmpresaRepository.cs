@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using WellMarket.Entities;
 using WellMarket.Entities.Responses;
@@ -18,6 +19,8 @@ namespace WellMarket.Repository
         Task<Response<Empresa>> obtenerEmpresaPorId(int idEmpresa);
         Task<ResponseBase> actualizarLogo(Logo logo);
         Task<ResponseBase> ActualizarDatosEmpresa(int idEmpresa,Empresa empresa);
+        Task<Response<List<Empresa>>> ObtenerEmpresaPorMunicipio(int idMunicipio,int pag);
+        Task<Response<List<Empresa>>> ObtenerEmpresaPorZona(int idZona, int pag);
     }
     public class EmpresaRepository:IEmpresa
     {
@@ -224,6 +227,135 @@ namespace WellMarket.Repository
                             response.Data = empresa;
                         }
 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Empresa>>> ObtenerEmpresaPorMunicipio(int idMunicipio, int pag)
+        {
+            var response = new Response<List<Empresa>>();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Seguridad.spObtenerEmpresaPorMunicipio", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idZona", idMunicipio);
+                        command.Parameters.AddWithValue("@paginasTotal", 0);
+                        command.Parameters.AddWithValue("@pagina", pag);
+                        command.Parameters["@paginasTotal"].Direction = ParameterDirection.Output;
+                        connection.Open();
+                        using(var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Empresa>();
+                            while (reader.Read())
+                            {
+                                var empresa = new Empresa();
+                                empresa.idEmpresa = reader.GetInt32("idEmpresa");
+                                empresa.nombre = reader.GetString("nombre");
+                                empresa.direccion = reader.GetString("direccion");
+                                empresa.rfc = reader.GetString("rfc");
+                                empresa.encargado = reader.GetString("encargado");
+                                empresa.vision = reader.GetString("vision");
+                                empresa.mision = reader.GetString("mision");
+                                empresa.telefono = reader.GetString("telefono");
+                                empresa.urlLogo = reader.GetString("urlLogo");
+                                empresa.idRolEmpresa = reader.GetInt32("idRolEmpresa");
+                                empresa.nombreRol = reader.GetString("nombreRol");
+                                empresa.fecha = reader.GetString("fecha");
+                                empresa.abierto = reader.GetBoolean("abierto");
+                                empresa.horaInicio = reader.GetString("horaInicio");
+                                empresa.horaCerrado = reader.GetString("horaCerrado");
+                                empresa.diaInicio = reader.GetString("diaInicio");
+                                empresa.diaCerrado = reader.GetString("diaCerrado");
+                                empresa.logo = new Logo
+                                {
+                                    idLogo = reader.GetInt32("idLogo"),
+                                    idEmpresa = reader.GetInt32("idEmpresa"),
+                                    imagen = reader.GetString("imagen"),
+                                    url = reader.GetString("url")
+                                };
+                                list.Add(empresa);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenido Correctamente";
+                            response.Data = list;
+                        }
+                        response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
+
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Empresa>>> ObtenerEmpresaPorZona(int idZona, int pag)
+        {
+            var response = new Response<List<Empresa>>();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spObtenerEmpresaPorZona", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idZona", idZona);
+                        command.Parameters.AddWithValue("@paginasTotal", 0);
+                        command.Parameters.AddWithValue("@pagina", pag);
+                        command.Parameters["@paginasTotal"].Direction = ParameterDirection.Output;
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Empresa>();
+                            while (reader.Read())
+                            {
+                                var empresa = new Empresa();
+                                empresa.idEmpresa = reader.GetInt32("idEmpresa");
+                                empresa.nombre = reader.GetString("nombre");
+                                empresa.direccion = reader.GetString("direccion");
+                                empresa.rfc = reader.GetString("rfc");
+                                empresa.encargado = reader.GetString("encargado");
+                                empresa.vision = reader.GetString("vision");
+                                empresa.mision = reader.GetString("mision");
+                                empresa.telefono = reader.GetString("telefono");
+                                empresa.urlLogo = reader.GetString("urlLogo");
+                                empresa.idRolEmpresa = reader.GetInt32("idRolEmpresa");
+                                empresa.nombreRol = reader.GetString("nombreRol");
+                                empresa.fecha = reader.GetString("fecha");
+                                empresa.abierto = reader.GetBoolean("abierto");
+                                empresa.horaInicio = reader.GetString("horaInicio");
+                                empresa.horaCerrado = reader.GetString("horaCerrado");
+                                empresa.diaInicio = reader.GetString("diaInicio");
+                                empresa.diaCerrado = reader.GetString("diaCerrado");
+                                empresa.logo = new Logo
+                                {
+                                    idLogo = reader.GetInt32("idLogo"),
+                                    idEmpresa = reader.GetInt32("idEmpresa"),
+                                    imagen = reader.GetString("imagen"),
+                                    url = reader.GetString("url")
+                                };
+                                list.Add(empresa);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenido Correctamente";
+                            response.Data = list;
+                        }
+                            response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
                     }
                 }
             }

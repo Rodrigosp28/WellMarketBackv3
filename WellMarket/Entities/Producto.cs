@@ -13,10 +13,12 @@ namespace WellMarket.Entities
         public string descripcion { get; set; }
         public double precio { get; set; }
         public Boolean paraCocina { get; set; }
+        public Boolean paraMenu { get; set; }
         public int idDisponible { get; set; }
         public disponible_producto disponible { get; set; }
         public int idEmpresa { get; set; }
         public int idCategoria { get; set; }
+        public int idCatProducto { get; set; }
         public Categoria_Producto categoria { get; set; }
         public List<Imagenes_Producto> imagenes { get; set; }
     }

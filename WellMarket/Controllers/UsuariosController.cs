@@ -40,6 +40,23 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        [HttpGet("verificacion/{idUsuario}")]
+        public async Task<ActionResult> VerificacionUsuario(int idUsuario)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await usuario.VerificacionUsuario(idUsuario);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+                return StatusCode(500, response);
+            }
+            return Ok(response);
+        }
+
         [HttpGet("{id}/ById")]
         public async Task<ActionResult> GetUsuario(int id)
         {

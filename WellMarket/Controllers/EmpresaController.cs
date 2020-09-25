@@ -175,5 +175,37 @@ namespace WellMarket.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet("municipio/{idMunicipio}")]
+        public async Task<ActionResult>ObtenerEmpresasaporMunicipio(int idMunicipio,[FromQuery]int pag=1)
+        {
+            var response = new Response<List<Empresa>>();
+            try
+            {
+                response = await this.empresa.ObtenerEmpresaPorMunicipio(idMunicipio,pag);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("zona/{idZona}")]
+        public async Task<ActionResult> ObtenerEmpresaPorZona(int idZona,[FromQuery]int pag=1)
+        {
+            var response = new Response<List<Empresa>>();
+            try
+            {
+                response = await this.empresa.ObtenerEmpresaPorZona(idZona,pag);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
     }
 }

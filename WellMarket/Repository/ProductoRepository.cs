@@ -53,6 +53,8 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@idDisponible", producto.idDisponible);
                         command.Parameters.AddWithValue("@idCategoria", producto.idCategoria);
                         command.Parameters.AddWithValue("@paraCocina", producto.paraCocina);
+                        command.Parameters.AddWithValue("@paraMenu", producto.paraMenu);
+                        command.Parameters.AddWithValue("@idCatProducto", producto.idCatProducto);
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
                         if (result > 0)
@@ -199,6 +201,8 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@idEmpresa", producto.idEmpresa);
                         command.Parameters.AddWithValue("@idCategoria", producto.idCategoria);
                         command.Parameters.AddWithValue("@paraCocina", producto.paraCocina);
+                        command.Parameters.AddWithValue("@paraMenu", producto.paraMenu);
+                        command.Parameters.AddWithValue("@idCatProducto", producto.idCatProducto);
                         command.Parameters["@idProducto"].Direction = ParameterDirection.Output;
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
@@ -330,8 +334,10 @@ namespace WellMarket.Repository
                                 producto.descripcion = reader.GetString("descripcion");
                                 producto.precio = reader.GetDouble("precio");
                                 producto.paraCocina = reader.GetBoolean("paraCocina");
+                                producto.paraMenu = reader.GetBoolean("paraMenu");
                                 producto.idDisponible = reader.GetInt32("idDisponible");
                                 producto.idEmpresa = reader.GetInt32("idEmpresa");
+                                producto.idCatProducto = reader.GetInt32("idCatProducto");
                                 producto.disponible = new disponible_producto
                                 {
                                     idDisponible = reader.GetInt32("idDisponible"),
@@ -388,8 +394,10 @@ namespace WellMarket.Repository
                                 producto.nombre = reader.GetString("nombre");
                                 producto.descripcion = reader.GetString("descripcion");
                                 producto.precio = reader.GetDouble("precio");
+                                producto.paraMenu = reader.GetBoolean("paraMenu");
                                 producto.paraCocina = reader.GetBoolean("paraCocina");
                                 producto.idDisponible = reader.GetInt32("idDisponible");
+                                producto.idCatProducto = reader.GetInt32("idCatProducto");
                                 producto.idEmpresa = reader.GetInt32("idEmpresa");
                                 producto.disponible = new disponible_producto
                                 {
@@ -410,7 +418,7 @@ namespace WellMarket.Repository
                             response.Data = list;
                             response.message = "Datos Obtenidos Correctamente";
                         }
-                            response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
+                        response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
                     }
                 }
             }
@@ -446,8 +454,10 @@ namespace WellMarket.Repository
                                     nombre = reader.GetString("nombre"),
                                     descripcion = reader.GetString("descripcion"),
                                     precio = reader.GetDouble("precio"),
+                                    paraMenu = reader.GetBoolean("paraMenu"),
                                     paraCocina = reader.GetBoolean("paraCocina"),
-                                idDisponible = reader.GetInt32("idDisponible"),
+                                    idCatProducto = reader.GetInt32("idCatProducto"),
+                                    idDisponible = reader.GetInt32("idDisponible"),
                                     disponible = new disponible_producto
                                     {
                                         idDisponible=reader.GetInt32("idDisponible"),
@@ -501,6 +511,8 @@ namespace WellMarket.Repository
                                     nombre = reader.GetString("nombre"),
                                     descripcion = reader.GetString("descripcion"),
                                     precio = reader.GetDouble("precio"),
+                                    paraMenu = reader.GetBoolean("paraMenu"),
+                                    idCatProducto = reader.GetInt32("idCatProducto"),
                                     paraCocina = reader.GetBoolean("paraCocina"),
                                     idDisponible = reader.GetInt32("idDisponible"),
                                     disponible = new disponible_producto
@@ -556,6 +568,8 @@ namespace WellMarket.Repository
                                     nombre = reader.GetString("nombre"),
                                     descripcion = reader.GetString("descripcion"),
                                     precio = reader.GetDouble("precio"),
+                                    paraMenu = reader.GetBoolean("paraMenu"),
+                                    idCatProducto = reader.GetInt32("idCatProducto"),
                                     paraCocina = reader.GetBoolean("paraCocina"),
                                     idDisponible = reader.GetInt32("idDisponible"),
                                     disponible = new disponible_producto

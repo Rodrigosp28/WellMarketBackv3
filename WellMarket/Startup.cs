@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using WellMarket.Entities;
 using WellMarket.Helpers;
 using WellMarket.Repository;
 using WellMarket.Services;
@@ -52,10 +53,14 @@ namespace WellMarket
             services.AddSingleton<IIngreso, IngresoRepository>();
             services.AddSingleton<IReporte, ReporteRepository>();
             services.AddSingleton<ICocina, CocinaRepository>();
+            services.AddSingleton<ICatProducto, CategoriaProductoRespository>();
+            services.AddSingleton<ICorreo, CorreoService>();
+            services.AddSingleton<IDisponibilidadD, DisponibilidadDRespository>();
 
             #endregion
 
             services.AddScoped<IAuthService, AuthService>();
+            services.Configure<OptionEmail>(Configuration.GetSection("EmailSenderOptions"));
 
             services.AddCors();
             var appSettingsSection = Configuration.GetSection("AppSettings");

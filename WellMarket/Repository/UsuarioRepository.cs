@@ -18,7 +18,8 @@ namespace WellMarket.Repository
         Task<ResponseBase> ActivarUsuario(int id, Boolean activo);
         Task<ResponseBase> RegistrarUsuarioEmpresa(Usuario user, Empresa empresa);
         Task<ResponseBase> actualizarLogo(int id,string logo, string img);
-        Task<ResponseBase> RegistrarUsuario(Usuario user);
+        Task<ResponseBase> RegistrarUsuario(Usuario user,string codVerificacion);
+        Task<ResponseBase> VerificacionUsuario(int idUsuario);
     }
     public class UsuarioRepository : IUsuarioRepository
     {
@@ -49,6 +50,7 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@idZona", user.idZona);
                         command.Parameters.AddWithValue("@idRol", user.idRol);
                         command.Parameters.AddWithValue("@idTipoUsuario", user.idTipoUsuario);
+                        command.Parameters.AddWithValue("@correo", user.correo);
                         command.Parameters["@idUsuario"].Direction = ParameterDirection.Output;
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
@@ -71,7 +73,47 @@ namespace WellMarket.Repository
             return response;
         }
 
-        public async Task<ResponseBase> RegistrarUsuario(Usuario user)
+        //verificacion de usuario para que pueda iniciar sesion
+        public async Task<ResponseBase> VerificacionUsuario(int idUsuario)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(this.con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spVerificacionDeUsuario", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idUsuario", idUsuario);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.id = idUsuario;
+                            response.success = true;
+                            response.message = "Usuario Verificado Correctamente";
+                        }
+                        else
+                        {
+                            response.success = false;
+                            response.message = "Usuario no verificado";
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        //codVerificacion se refiere al codigo para verificacion del correo
+        //este metodo registra al usuario desde la pagina register user
+        public async Task<ResponseBase> RegistrarUsuario(Usuario user, string codVerificacion)
         {
             var response = new ResponseBase();
             try
@@ -90,7 +132,8 @@ namespace WellMarket.Repository
                         command.Parameters.AddWithValue("@direccion", user.direccion);
                         command.Parameters.AddWithValue("@telefono", user.telefono);
                         command.Parameters.AddWithValue("@idZona", user.idZona);
-                        command.Parameters.AddWithValue("@idRol", 2);
+                        command.Parameters.AddWithValue("@correo", user.correo); 
+                        command.Parameters.AddWithValue("@codVerificacion", codVerificacion);
                         command.Parameters["@idUsuario"].Direction = ParameterDirection.Output;
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
@@ -143,6 +186,7 @@ namespace WellMarket.Repository
                                 user.activo = reader.GetBoolean("activo");
                                 user.idTipoUsuario = reader.GetInt32("idTipoUsuario");
                                 user.idEmpresa = reader.GetInt32("idEmpresa");
+                                user.correo = reader.GetString("email");
                             }
 
                             response.success = true;
