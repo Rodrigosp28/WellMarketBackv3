@@ -155,6 +155,7 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        //elimina de forma logica un producto
         [HttpDelete("{id}")]
         public async Task<ActionResult> eliminarProducto(int id)
         {
@@ -302,7 +303,7 @@ namespace WellMarket.Controllers
 
         }
 
-        //obtiene un arreglo con una tabla de imagenes
+        //obtiene un arreglo con una tabla de imagenes de un producto
         [HttpGet("imagen/{id}/ByProducto")]
         public async Task<ActionResult> ObtenerImagenesPorProducto(int id)
         {

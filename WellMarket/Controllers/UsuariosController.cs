@@ -74,7 +74,25 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
-        [HttpPut("active/{id}/{active}")]
+        //obtener usuario por su telefono
+        [HttpGet("{tel}/ByTelefono")]
+        public async Task<ActionResult> GetUsuarioPorTelefono(string tel)
+        {
+            var response = new Response<Usuario>();
+            try
+            {
+                response = await usuario.ObtenerUsuarioPorTelefono(tel);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+                return StatusCode(500, response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("active/{id}/{active}")]
         public async Task<ActionResult> ActivarUsuario(int id, Boolean active)
         {
             var response = new ResponseBase();

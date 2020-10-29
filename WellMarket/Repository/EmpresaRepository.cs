@@ -21,6 +21,8 @@ namespace WellMarket.Repository
         Task<ResponseBase> ActualizarDatosEmpresa(int idEmpresa,Empresa empresa);
         Task<Response<List<Empresa>>> ObtenerEmpresaPorMunicipio(int idMunicipio,int pag);
         Task<Response<List<Empresa>>> ObtenerEmpresaPorZona(int idZona, int pag);
+        Task<Response<List<Empresa>>> ObtenerEmpresasaAll();
+        Task<ResponseBase> ActivarDesactivarEmpresa(int idEmpresa, Boolean opt);
     }
     public class EmpresaRepository:IEmpresa
     {
@@ -29,6 +31,46 @@ namespace WellMarket.Repository
         public EmpresaRepository(IConnection con)
         {
             this.con = con;
+        }
+
+        public async Task<ResponseBase> ActivarDesactivarEmpresa(int idEmpresa, bool opt)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Seguridad.spActivarDesactivarEmpresa", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@opt", opt);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            if (opt == true)
+                            {
+                                response.message = "Empresa Activada Correctamente";
+                               
+                            }
+                            else
+                            {
+                                response.message = "Empresa Desactivada Correctamente";
+                            }
+                            response.success = true;
+                            response.id = idEmpresa;
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
         }
 
         public async Task<ResponseBase> ActualizarDatosEmpresa(int idEmpresa, Empresa empresa)
@@ -107,6 +149,7 @@ namespace WellMarket.Repository
             return response;
         }
 
+        //abrir o cerrar empresa
         public async Task<ResponseBase> cambiarestadoEmpresa(Empresa empresa)
         {
             var response = new ResponseBase();
@@ -356,6 +399,68 @@ namespace WellMarket.Repository
                             response.Data = list;
                         }
                             response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Empresa>>> ObtenerEmpresasaAll()
+        {
+            var response = new Response<List<Empresa>>();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spObtenerEmpresas", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Empresa>();
+                            while (reader.Read())
+                            {
+                                var empresa = new Empresa();
+                                empresa.idEmpresa = reader.GetInt32("idEmpresa");
+                                empresa.nombre = reader.GetString("nombre");
+                                empresa.direccion = reader.GetString("direccion");
+                                empresa.rfc = reader.GetString("rfc");
+                                empresa.encargado = reader.GetString("encargado");
+                                empresa.vision = reader.GetString("vision");
+                                empresa.mision = reader.GetString("mision");
+                                empresa.telefono = reader.GetString("telefono");
+                                empresa.urlLogo = reader.GetString("urlLogo");
+                                empresa.idRolEmpresa = reader.GetInt32("idRolEmpresa");
+                                empresa.nombreRol = reader.GetString("nombreRol");
+                                empresa.fecha = reader.GetString("fecha");
+                                empresa.abierto = reader.GetBoolean("abierto");
+                                empresa.horaInicio = reader.GetString("horaInicio");
+                                empresa.horaCerrado = reader.GetString("horaCerrado");
+                                empresa.diaInicio = reader.GetString("diaInicio");
+                                empresa.diaCerrado = reader.GetString("diaCerrado");
+                                empresa.activo = reader.GetBoolean("activo");
+                                empresa.logo = new Logo
+                                {
+                                    idLogo = reader.GetInt32("idLogo"),
+                                    idEmpresa = reader.GetInt32("idEmpresa"),
+                                    imagen = reader.GetString("imagen"),
+                                    url = reader.GetString("url")
+                                };
+                                list.Add(empresa);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenido Correctamente";
+                            response.Data = list;
+                           
+                        }
+
                     }
                 }
             }

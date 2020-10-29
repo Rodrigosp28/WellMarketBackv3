@@ -143,7 +143,7 @@ namespace WellMarket.Controllers
         #endregion
 
         //esta es la categoria del producto agregada por la empresa
-        #region Categoria_Producto
+        #region Categoria_ProductoCat
         //esta es la categoria del producto agregada por la empresa
         [HttpGet("catproducto/{idEmpresa}")]
         public async Task<ActionResult> ObtenercategoriasProductosdeEmpresa(int idEmpresa)
@@ -152,6 +152,42 @@ namespace WellMarket.Controllers
             try
             {
                 response = await this.catProducto.ObtenerCategoriaProductoPorEmpresa(idEmpresa);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+                return StatusCode(500, response);
+            }
+            return Ok(response);
+        }
+
+        //obtiene las categorias de la empresa que esten disponibles para menu
+        [HttpGet("catproducto/{idEmpresa}/menu")]
+        public async Task<ActionResult> ObtenercategoriasProductosdeEmpresaMenu(int idEmpresa)
+        {
+            var response = new Response<List<CatProducto>>();
+            try
+            {
+                response = await this.catProducto.ObtenerCategoriaProductoPorEmpresaMenu(idEmpresa);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+                return StatusCode(500, response);
+            }
+            return Ok(response);
+        }
+
+        //activa o desactiva la categoria del producto interna de la empresa
+        [HttpGet("catproducto/{idCat}/activar")]
+        public async Task<ActionResult> ActivarcategoriasProductos(int idCat,[FromQuery]Boolean activar)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.catProducto.ActivarCategoria(idCat, activar);
             }
             catch (Exception ex)
             {
@@ -175,6 +211,22 @@ namespace WellMarket.Controllers
                 response.success = false;
                 response.message = ex.Message;
                 return StatusCode(500, response);
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("catproducto/{idCatProducto}")]
+        public async Task<ActionResult>EliminarCatProducto(int idCatProducto)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.catProducto.EliminarCatProducto(idCatProducto);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
             }
             return Ok(response);
         }

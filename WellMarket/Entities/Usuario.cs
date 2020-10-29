@@ -21,6 +21,8 @@ namespace WellMarket.Entities
         public Boolean activo { get; set; }
         public int idTipoUsuario { get; set; }
         public int idEmpresa { get; set; }
+        public string nombreZona { get; set; }
+        
         public Boolean verificado { get; set; }
     }
 }

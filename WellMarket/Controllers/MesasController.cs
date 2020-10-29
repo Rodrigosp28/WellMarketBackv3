@@ -76,12 +76,12 @@ namespace WellMarket.Controllers
 
         //actualiza el nombre de la mesa
         [HttpPut("{idMesa}")]
-        public async Task<ResponseBase>ActualizarMesa(int idMesa,[FromQuery]string nombre)
+        public async Task<ResponseBase>ActualizarMesa(int idMesa,[FromQuery]string nombre,[FromQuery]string descripcion)
         {
             ResponseBase response = new ResponseBase();
             try
             {
-                response = await this.mesa.ActualizarNombreMesa(idMesa, nombre);
+                response = await this.mesa.ActualizarNombreMesa(idMesa, nombre, descripcion);
             }
             catch(Exception ex)
             {

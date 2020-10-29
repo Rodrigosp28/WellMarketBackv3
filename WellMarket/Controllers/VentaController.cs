@@ -154,6 +154,41 @@ namespace WellMarket.Controllers
 
         }
 
+        [HttpGet("ticket/{idTicket}/domicilio")]
+        public async Task<ActionResult> InsertarDomicilioTicket(int idTicket,[FromQuery] string domicilio)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.ventas.InsertarDomicilioTicket(idTicket, domicilio);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+
+        }
+
+        //agregar usuario al ticket
+        [HttpGet("ticket/{idTicket}/usuario")]
+        public async Task<ActionResult> InsertarUsuarioTicket(int idTicket,[FromQuery] int idUsuario)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await this.ventas.InsertarUsuarioTicket(idTicket, idUsuario);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+
+        }
+
         [HttpPost("ticket/venta")]
         public async Task<ActionResult> VentaTicket([FromBody] Venta v)
         {

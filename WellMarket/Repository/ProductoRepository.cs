@@ -430,6 +430,7 @@ namespace WellMarket.Repository
             return response;
         }
 
+        //obtienes todos los productos de la empresa esten disponibles o no
         public async Task<Response<List<Producto>>> ObtenerProductoPorEmpresa(int idEmpresa)
         {
             var response = new Response<List<Producto>>();

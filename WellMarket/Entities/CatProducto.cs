@@ -11,6 +11,7 @@ namespace WellMarket.Entities
         public string nombre { get; set; }
         public string descripcion { get; set; }
         public int idEmpresa { get; set; }
+        public Boolean menu { get; set; }
         public Boolean habilitado { get; set; }
     }
 }

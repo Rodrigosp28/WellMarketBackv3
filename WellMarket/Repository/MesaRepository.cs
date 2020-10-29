@@ -17,7 +17,7 @@ namespace WellMarket.Repository
         Task<Response<List<TipoMesa>>> ObtenerTiposMesa();
         Task<Response<List<Mesa>>> ObtenerMesasPorEmpresaAll(int idEmpresa);
         Task<ResponseBase> EliminarMesa(int idMesa);
-        Task<ResponseBase> ActualizarNombreMesa(int idMesa, string nombre);
+        Task<ResponseBase> ActualizarNombreMesa(int idMesa, string nombre, string descripcion);
     }
     public class MesaRepository:IMesa
     {
@@ -29,7 +29,7 @@ namespace WellMarket.Repository
         }
 
         // actualiza el nombre de la empresa
-        public async Task<ResponseBase> ActualizarNombreMesa(int idMesa, string nombre)
+        public async Task<ResponseBase> ActualizarNombreMesa(int idMesa, string nombre, string descripcion)
         {
             var response = new ResponseBase();
             try
@@ -42,6 +42,7 @@ namespace WellMarket.Repository
                         command.Parameters.Clear();
                         command.Parameters.AddWithValue("@idMesa", idMesa);
                         command.Parameters.AddWithValue("@nombre", nombre);
+                        command.Parameters.AddWithValue("@descripcion", descripcion);
                         connection.Open();
                         var result = await command.ExecuteNonQueryAsync();
                         if (result > 0)
@@ -69,7 +70,7 @@ namespace WellMarket.Repository
             {
                 using (var connection = new SqlConnection(con.getConnection()))
                 {
-                    using (var command = new SqlCommand("exec Reporte.spEliminarMesa", connection))
+                    using (var command = new SqlCommand("Reporte.spEliminarMesa", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.Clear();

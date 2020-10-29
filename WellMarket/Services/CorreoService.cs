@@ -50,7 +50,7 @@ namespace WellMarket.Services
                 {
                     throw new Exception("Cuenta de correo electronico no registrada");
                 }
-                string link = $"http://gcaseqa-001-site26.atempurl.com//#/verificar/{idUsuario}/verificado";
+                string link = $"http://buenmercado.com.mx/#/verificar/{idUsuario}/verificado";
                 StringBuilder mensaje = new StringBuilder();
                 mensaje.Append("<h1>Bienvenido a WellMarket</h1>");
                 mensaje.Append("<h3>Ingresa al link para verificar tu correo electronico</h3>");

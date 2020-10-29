@@ -56,6 +56,7 @@ namespace WellMarket
             services.AddSingleton<ICatProducto, CategoriaProductoRespository>();
             services.AddSingleton<ICorreo, CorreoService>();
             services.AddSingleton<IDisponibilidadD, DisponibilidadDRespository>();
+            services.AddSingleton<IPromocion, PromocionRepository>();
 
             #endregion
 

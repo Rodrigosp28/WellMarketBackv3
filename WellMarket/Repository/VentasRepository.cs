@@ -20,6 +20,8 @@ namespace WellMarket.Repository
         Task<ResponseBase> IniciarTicket(InsertTicket it);
         Task<ResponseBase> CerrarTicket(CerrarTicket ct);
         Task<ResponseBase> InsertarVentaTicket(Venta v);
+        Task<ResponseBase> InsertarUsuarioTicket(int idTicket, int idUsuario);
+        Task<ResponseBase> InsertarDomicilioTicket(int idTicket, string domicilio);
         Task<Response<TicketVentaResponse>> ObtenerVentaTicket(int idTicket);
         Task<ResponseBase> CancelarTicket(CerrarTicket ct);
         Task<ResponseBase> EliminarVentaTicket(int idVenta);
@@ -342,6 +344,70 @@ namespace WellMarket.Repository
             return response;
         }
 
+        public async Task<ResponseBase> InsertarUsuarioTicket(int idTicket, int idUsuario)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spInsertarUsuarioTicket", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idTicket", idTicket);
+                        command.Parameters.AddWithValue("@idUsuario", idUsuario);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.success = true;
+                            response.message = "usuario insertado correctamente";
+                            response.id = idUsuario;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<ResponseBase> InsertarDomicilioTicket(int idTicket, string domicilio)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spInsertarDomicilioTicket", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idTicket", idTicket);
+                        command.Parameters.AddWithValue("@domicilio", domicilio);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.success = true;
+                            response.message = "usuario insertado correctamente";
+                            response.id = idTicket;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
         public async Task<Mesa> ObtenerMesaIdTicket(int idTicket)
         {
             var mesa = new Mesa();
@@ -399,6 +465,9 @@ namespace WellMarket.Repository
                                 ticket.horaEntrada = reader.GetString("horaEntrada");
                                 ticket.idEstatus = reader.GetInt32("idEstatus");
                                 ticket.activo = reader.GetBoolean("activo");
+                                ticket.domicilio = reader.GetString("domicilio");
+                                ticket.usuarioCompra = reader.GetInt32("usuarioCompra");
+                                ticket.telefonoUsuario = reader.GetString("telefonoUsuario");
                             }
                             return ticket;
                         }

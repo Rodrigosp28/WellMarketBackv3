@@ -24,5 +24,8 @@ namespace WellMarket.Entities
         public Boolean activo{get;set;}
         public double pago { get; set; }
         public double cambio { get; set; }
+        public int usuarioCompra { get; set; }
+        public string domicilio { get; set; }
+        public string telefonoUsuario { get; set; }
     }
 }

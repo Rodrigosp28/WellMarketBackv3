@@ -15,6 +15,7 @@ namespace WellMarket.Repository
         Task<ResponseBase> InsertarUsuario(Usuario user);
         Task<Response<List<Usuario>>> ObtenerUsuarios();
         Task<Response<Usuario>> ObtenerUsuarioPorId(int id);
+        Task<Response<Usuario>> ObtenerUsuarioPorTelefono(string tel);
         Task<ResponseBase> ActivarUsuario(int id, Boolean activo);
         Task<ResponseBase> RegistrarUsuarioEmpresa(Usuario user, Empresa empresa);
         Task<ResponseBase> actualizarLogo(int id,string logo, string img);
@@ -205,6 +206,46 @@ namespace WellMarket.Repository
             return response;
         }
 
+        public async Task<Response<Usuario>> ObtenerUsuarioPorTelefono(string tel)
+        {
+            var response = new Response<Usuario>();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spBuscarUsuarioPorTelefono", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@telefono", tel);
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var user = new Usuario();
+                            while (reader.Read())
+                            {
+                                user.idUsuario = reader.GetInt32("idUsuario");
+                                user.nombre = reader.GetString("nombre");
+                                user.apellido = reader.GetString("apellido");
+                                user.direccion = reader.GetString("direccion");
+                                user.nombreZona = reader.GetString("nombreZona");
+                            }
+
+                            response.success = true;
+                            response.message = "Datos Obtenidos Correctamente";
+                            response.id = user.idUsuario;
+                            response.Data = user;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
         public async Task<Response<List<Usuario>>> ObtenerUsuarios()
         {
             var response = new Response<List<Usuario>>();
@@ -233,7 +274,9 @@ namespace WellMarket.Repository
                                     idRol = reader.GetInt32("idRol"),
                                     fecha = reader.GetDateTime("fecha").ToString("MM/dd/yyyy"),
                                     activo = reader.GetBoolean("activo"),
-                                    idTipoUsuario= reader.GetInt32("idTipoUsuario")
+                                    idTipoUsuario= reader.GetInt32("idTipoUsuario"),
+                                    verificado = reader.GetBoolean("verificado"),
+                                    telefono = reader.GetString("telefono")
 
                                 });
                             }

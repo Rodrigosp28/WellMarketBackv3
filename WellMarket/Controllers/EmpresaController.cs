@@ -27,6 +27,38 @@ namespace WellMarket.Controllers
             this.environment = environment;
         }
 
+        [HttpGet("all")]
+        public async Task<ActionResult>ObtenerEmpresasAll()
+        {
+            var response = new Response<List<Empresa>>();
+            try
+            {
+                response = await empresa.ObtenerEmpresasaAll();
+            }
+            catch(Exception ex)
+            {
+                response.success = true;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("activardesactivar/{idEmpresa}")]
+        public async Task<ActionResult>ActivarDesactivarEmpresa(int idEmpresa,[FromQuery]Boolean opt)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await empresa.ActivarDesactivarEmpresa(idEmpresa, opt);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpPut("abrir")]
         public async Task<ActionResult> abrirEmpresa([FromBody] Empresa empresa)
         {
