@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -20,17 +21,22 @@ namespace WellMarket.Repository
         Task<ResponseBase> actualizarLogo(Logo logo);
         Task<ResponseBase> ActualizarDatosEmpresa(int idEmpresa,Empresa empresa);
         Task<Response<List<Empresa>>> ObtenerEmpresaPorMunicipio(int idMunicipio,int pag);
+        Task<Response<List<Empresa>>> ObtenerEmpresaPorMunicipioBusqueda(int idMunicipio,int pag,string busqueda);
         Task<Response<List<Empresa>>> ObtenerEmpresaPorZona(int idZona, int pag);
         Task<Response<List<Empresa>>> ObtenerEmpresasaAll();
         Task<ResponseBase> ActivarDesactivarEmpresa(int idEmpresa, Boolean opt);
+        Task<Response<Empresa>> ObtenerUbicacionEmpresa(int idEmpresa);
+        Task<ResponseBase> ActualizarUbicacionEmpresa(int idEmpresa, string lat, string lng);
     }
     public class EmpresaRepository:IEmpresa
     {
         private readonly IConnection con;
+        private readonly IConfiguration _configuration;
 
-        public EmpresaRepository(IConnection con)
+        public EmpresaRepository(IConnection con, IConfiguration configuration)
         {
             this.con = con;
+            _configuration = configuration;
         }
 
         public async Task<ResponseBase> ActivarDesactivarEmpresa(int idEmpresa, bool opt)
@@ -148,6 +154,7 @@ namespace WellMarket.Repository
             }
             return response;
         }
+
 
         //abrir o cerrar empresa
         public async Task<ResponseBase> cambiarestadoEmpresa(Empresa empresa)
@@ -320,6 +327,16 @@ namespace WellMarket.Repository
                                 empresa.horaCerrado = reader.GetString("horaCerrado");
                                 empresa.diaInicio = reader.GetString("diaInicio");
                                 empresa.diaCerrado = reader.GetString("diaCerrado");
+                                empresa.latitud = reader.GetString("latitud");
+                                empresa.longitud = reader.GetString("longitud");
+                                if (empresa.longitud.Equals("0"))
+                                {
+                                    empresa.tieneUbicacion = false;
+                                }
+                                else
+                                {
+                                    empresa.tieneUbicacion = true;
+                                }
                                 empresa.logo = new Logo
                                 {
                                     idLogo = reader.GetInt32("idLogo"),
@@ -385,6 +402,16 @@ namespace WellMarket.Repository
                                 empresa.horaCerrado = reader.GetString("horaCerrado");
                                 empresa.diaInicio = reader.GetString("diaInicio");
                                 empresa.diaCerrado = reader.GetString("diaCerrado");
+                                empresa.latitud = reader.GetString("latitud");
+                                empresa.longitud = reader.GetString("longitud");
+                                if (empresa.longitud.Equals("0"))
+                                {
+                                    empresa.tieneUbicacion = false;
+                                }
+                                else
+                                {
+                                    empresa.tieneUbicacion = true;
+                                }
                                 empresa.logo = new Logo
                                 {
                                     idLogo = reader.GetInt32("idLogo"),
@@ -460,6 +487,157 @@ namespace WellMarket.Repository
                             response.Data = list;
                            
                         }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<Empresa>> ObtenerUbicacionEmpresa(int idEmpresa)
+        {
+            var response = new Response<Empresa>();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spMapaEmpresa", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@opt", 1);
+                        connection.Open();
+                        using(var reader = await command.ExecuteReaderAsync())
+                        {
+                            var empresa = new Empresa();
+                            while (reader.Read())
+                            {
+                                empresa.idEmpresa = idEmpresa;
+                                empresa.latitud = reader.GetString("latitud");
+                                empresa.longitud = reader.GetString("longitud");
+                            }
+                            response.success = true;
+                            response.message = "Datos obtenidos correctamente";
+                            response.id = idEmpresa;
+                            response.Data = empresa;
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<ResponseBase> ActualizarUbicacionEmpresa(int idEmpresa, string lat, string lng)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spMapaEmpresa", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idEmpresa", idEmpresa);
+                        command.Parameters.AddWithValue("@latitud", lat);
+                        command.Parameters.AddWithValue("@longitud", lng);
+                        command.Parameters.AddWithValue("@opt", 2);
+                        connection.Open();
+                        var result = await command.ExecuteNonQueryAsync();
+                        if (result > 0)
+                        {
+                            response.success = true;
+                            response.message = "Datos actualizados correctamente";
+                            response.id = idEmpresa;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<Empresa>>> ObtenerEmpresaPorMunicipioBusqueda(int idMunicipio, int pag, string busqueda)
+        {
+            var response = new Response<List<Empresa>>();
+            var linkback = _configuration.GetValue<string>("backlink");
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Seguridad.spObtenerEmpresaPorMunicipioBusqueda", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idZona", idMunicipio);
+                        command.Parameters.AddWithValue("@paginasTotal", 0);
+                        command.Parameters.AddWithValue("@pagina", pag);
+                        command.Parameters.AddWithValue("@busqueda", busqueda);
+                        command.Parameters["@paginasTotal"].Direction = ParameterDirection.Output;
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<Empresa>();
+                            while (reader.Read())
+                            {
+                                var empresa = new Empresa();
+                                empresa.idEmpresa = reader.GetInt32("idEmpresa");
+                                empresa.nombre = reader.GetString("nombre");
+                                empresa.direccion = reader.GetString("direccion");
+                                empresa.rfc = reader.GetString("rfc");
+                                empresa.encargado = reader.GetString("encargado");
+                                empresa.vision = reader.GetString("vision");
+                                empresa.mision = reader.GetString("mision");
+                                empresa.telefono = reader.GetString("telefono");
+                                empresa.urlLogo = reader.GetString("urlLogo");
+                                empresa.idRolEmpresa = reader.GetInt32("idRolEmpresa");
+                                empresa.nombreRol = reader.GetString("nombreRol");
+                                empresa.fecha = reader.GetString("fecha");
+                                empresa.abierto = reader.GetBoolean("abierto");
+                                empresa.horaInicio = reader.GetString("horaInicio");
+                                empresa.horaCerrado = reader.GetString("horaCerrado");
+                                empresa.diaInicio = reader.GetString("diaInicio");
+                                empresa.diaCerrado = reader.GetString("diaCerrado");
+                                empresa.latitud = reader.GetString("latitud");
+                                empresa.longitud = reader.GetString("longitud");
+                                if (empresa.longitud.Equals("0"))
+                                {
+                                    empresa.tieneUbicacion = false;
+                                }
+                                else
+                                {
+                                    empresa.tieneUbicacion = true;
+                                }
+                                empresa.logo = new Logo
+                                {
+                                    idLogo = reader.GetInt32("idLogo"),
+                                    idEmpresa = reader.GetInt32("idEmpresa"),
+                                    imagen = reader.GetString("imagen"),
+                                };
+                                empresa.logo.url = $"http://{linkback}/api/empresa/logo/" + empresa.idEmpresa + "/" + empresa.logo.imagen;
+                                list.Add(empresa);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenido Correctamente";
+                            response.Data = list;
+                        }
+                        response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
 
                     }
                 }

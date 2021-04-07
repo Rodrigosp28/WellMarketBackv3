@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -32,14 +33,17 @@ namespace WellMarket.Repository
         Task<Response<List<Ticket>>> ObtenerTicketsPorMes(int idEmpresa, int mes);
         Task<Response<List<Ticket>>> ObtenerTicketsPorIntervalo(IntervaloTicket i);
         Task<ResponseBase> ActualizarVenta(Venta v);
+        Task<Response<List<MasVendidosUsuario>>> ObtenerProductosMasVendidosByMunicipio(int idMunicipio);
     }
     public class VentasRepository : IVentas
     {
         private readonly IConnection con;
+        private readonly IConfiguration _configuration;
 
-        public VentasRepository(IConnection con)
+        public VentasRepository(IConnection con, IConfiguration configuration)
         {
             this.con = con;
+            _configuration = configuration;
         }
 
         public async Task<ResponseBase> ActualizarVenta(Venta v)
@@ -733,6 +737,52 @@ namespace WellMarket.Repository
                             response.success = true;
                             response.message = "Datos Obtenidos Correctamente";
                             response.Data = ticket;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        //obtiene el idZona del usuario y de ahi obtiene el municipio
+        public async Task<Response<List<MasVendidosUsuario>>> ObtenerProductosMasVendidosByMunicipio(int idMunicipio)
+        {
+            var response = new Response<List<MasVendidosUsuario>>();
+            var linkback = _configuration.GetValue<string>("backlink");
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spObtenerProductosMasVendidosByMunicipio", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idZona", idMunicipio);
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<MasVendidosUsuario>();
+
+                            while (reader.Read())
+                            {
+                                var mv = new MasVendidosUsuario();
+                                mv.producto = reader.GetString("producto");
+                                mv.idEmpresa = reader.GetInt32("idEmpresa");
+                                mv.nombreEmpresa = reader.GetString("nombreEmpresa");
+                                mv.precio = reader.GetDouble("precio");
+                                mv.imagen = reader.GetString("imagen");
+                                mv.logo = $"http://{linkback}/api/empresa/logo/" + mv.idEmpresa + "/" + mv.imagen;
+                                list.Add(mv);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenidos Correctamente";
+                            response.Data = list;
+
                         }
                     }
                 }

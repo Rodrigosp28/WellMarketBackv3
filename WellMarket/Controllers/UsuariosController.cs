@@ -40,6 +40,24 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        //obtiene el historial de compra del usuario
+        [HttpGet("historialCompra/{idUsuario}")]
+        public async Task<ActionResult>ObtenerHistorialCompraUsuario(int idUsuario)
+        {
+            var response = new Response<List<HistorialUsuario>>();
+            try
+            {
+                response = await usuario.ObtenerHistorialCompraUsuario(idUsuario);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+
+        }
+
         [HttpGet("verificacion/{idUsuario}")]
         public async Task<ActionResult> VerificacionUsuario(int idUsuario)
         {

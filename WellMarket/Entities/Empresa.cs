@@ -25,6 +25,9 @@ namespace WellMarket.Entities
         public string fecha { get; set; }
         public Logo logo { get; set; }
         public Boolean abierto { get; set; }
+        public Boolean tieneUbicacion { get; set; }
+        public string latitud { get; set; }
+        public string longitud { get; set; }
         public Boolean activo { get; set; }
 
     }

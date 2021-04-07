@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,16 +19,19 @@ namespace WellMarket.Services
     public interface ICorreo
     {
         Task<ResponseBase>VerificacionCorreo(string email);
-        Task<int> ObtenerIdCorreo(string email);
+        Task<Usuario> ObtenerIdCorreo(string email);
     }
     public class CorreoService : ICorreo
     {
         private SmtpClient Cliente { get; }
         private OptionEmail Options { get; }
         private readonly IConnection con;
-        public CorreoService(IOptions<OptionEmail> options, IConnection con)
+        private readonly IConfiguration _configuration;
+
+        public CorreoService(IOptions<OptionEmail> options, IConnection con, IConfiguration configuration)
         {
             this.con = con;
+            _configuration = configuration;
             Options = options.Value;
             Cliente = new SmtpClient()
             {
@@ -41,18 +46,20 @@ namespace WellMarket.Services
         public async Task<ResponseBase>VerificacionCorreo(string email)
         {
             var response = new ResponseBase();
-            int idUsuario;
+            Usuario Usuario= new Usuario();
             string asunto = "Verificacion de Email en WellMarket";
             try
             {
-                idUsuario = await this.ObtenerIdCorreo(email);
-                if(idUsuario==0)
+                Usuario = await this.ObtenerIdCorreo(email);
+                if(Usuario.idUsuario==0)
                 {
                     throw new Exception("Cuenta de correo electronico no registrada");
                 }
-                string link = $"http://buenmercado.com.mx/#/verificar/{idUsuario}/verificado";
+                string linkFront = _configuration.GetValue<string>("frontLink");
+                string link = $"http://{linkFront}/#/verificar/{Usuario.idUsuario}/verificado";
                 StringBuilder mensaje = new StringBuilder();
                 mensaje.Append("<h1>Bienvenido a WellMarket</h1>");
+                mensaje.Append($"<h2>Usuario: {Usuario.usuario}   Contraseña: {Usuario.password}</h2>");
                 mensaje.Append("<h3>Ingresa al link para verificar tu correo electronico</h3>");
                 mensaje.Append($"<p><a href={link}>Link de verificacion</a></p>");
                 var correo = new MailMessage(from: Options.Email, to: email, subject: asunto, body: mensaje.ToString());
@@ -70,10 +77,10 @@ namespace WellMarket.Services
 
         }
 
-        public async Task<int> ObtenerIdCorreo(string email)
+        public async Task<Usuario> ObtenerIdCorreo(string email)
         {
             int result=0;
-            int idUsuario = 0;
+            Usuario user = new Usuario();
             try
             {
                 using (var connection = new SqlConnection(con.getConnection()))
@@ -88,22 +95,24 @@ namespace WellMarket.Services
                         {
                             while (reader.Read())
                             {
-                                idUsuario = reader.GetInt32("idUsuario");
+                                user.idUsuario = reader.GetInt32("idUsuario");
+                                user.usuario = reader.GetString("usuario");
+                                user.password = reader.GetString("password");
                             }
 
-                            if (idUsuario == 0)
+                            if (user.idUsuario == 0)
                             {
                                 result = 0;
-                                return 0;
+                                return user;
                             }
-                            return idUsuario;
+                            return user;
                         }
                     }
                 }
             }
             catch(Exception ex)
             {
-                return result;
+                return user;
             }
 
         }

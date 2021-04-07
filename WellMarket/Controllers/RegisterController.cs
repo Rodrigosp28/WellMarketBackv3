@@ -45,7 +45,7 @@ namespace WellMarket.Controllers
             var response = new ResponseBase();
             var empresa = new Empresa();
             var usuario = new Usuario();
-            List<string> fileExtension = new List<string>() { ".png",".jpg","jpeg" };
+            List<string> fileExtension = new List<string>() { ".png",".jpg",".jpeg" };
 
             try
             {

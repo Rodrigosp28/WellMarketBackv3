@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -23,6 +24,7 @@ namespace WellMarket.Repository
         Task<ResponseBase> EliminarImagenProducto(int idEmpresa, string imagen);
         Task<Response<List<Producto>>> ObtenerProductoDisponiblePorEmpresa(int idEmpresa);
         Task<Response<List<Producto>>> ObtenerProductoDisponiblePorEmpresaPag(int idEmpresa, int pag);
+        Task<Response<List<MasVendidosUsuario>>> ObtenerProductoBusqueda(int idZona,int pag,string busqueda);
         Task<Response<List<PMasVendidos>>> ObtenerCincoProductosMasVendidos(int idEmpresa, string fecha);
         Task<ResponseBase> EliminarProducto(int idProducto);
 
@@ -30,10 +32,12 @@ namespace WellMarket.Repository
     public class ProductoRepository: IProducto
     {
         private readonly IConnection con;
+        private readonly IConfiguration _configuration;
 
-        public ProductoRepository(IConnection con)
+        public ProductoRepository(IConnection con, IConfiguration configuration)
         {
             this.con = con;
+            _configuration = configuration;
         }
 
         public async Task<ResponseBase> ActualizarProducto(int id, Producto producto)
@@ -298,6 +302,57 @@ namespace WellMarket.Repository
                             response.Data = list;
                             response.message = "Datos Obtenidos Correctamente";
                         }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        //obtiene productos por busqueda con informacion de la empresa
+        public async Task<Response<List<MasVendidosUsuario>>> ObtenerProductoBusqueda(int idZona, int pag, string busqueda)
+        {
+            var response = new Response<List<MasVendidosUsuario>>();
+            var linkback = _configuration.GetValue<string>("backlink");
+            try
+            {
+                using (var connection = new SqlConnection(con.getConnection()))
+                {
+                    using (var command = new SqlCommand("Reporte.spObtenerProductosPorBusqueda", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idZona", idZona);
+                        command.Parameters.AddWithValue("@paginasTotal", 0);
+                        command.Parameters.AddWithValue("@pagina", pag);
+                        command.Parameters.AddWithValue("@busqueda", busqueda);
+                        command.Parameters["@paginasTotal"].Direction = ParameterDirection.Output;
+                        connection.Open();
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<MasVendidosUsuario>();
+
+                            while (reader.Read())
+                            {
+                                var mv = new MasVendidosUsuario();
+                                mv.producto = reader.GetString("nombreProducto");
+                                mv.idEmpresa = reader.GetInt32("idEmpresa");
+                                mv.nombreEmpresa = reader.GetString("nombreEmpresa");
+                                mv.precio = reader.GetDouble("precio");
+                                mv.imagen = reader.GetString("imagen");
+                                mv.logo = $"http://{linkback}/api/empresa/logo/" + mv.idEmpresa + "/" + mv.imagen;
+                                list.Add(mv);
+                            }
+                            response.success = true;
+                            response.message = "Datos Obtenidos Correctamente";
+                            response.Data = list;
+
+                        }
+                        response.paginas = Convert.ToInt32(command.Parameters["@paginasTotal"].Value);
                     }
                 }
             }

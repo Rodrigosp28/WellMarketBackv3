@@ -208,6 +208,7 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        //obtiene empresas por municipio
         [HttpGet("municipio/{idMunicipio}")]
         public async Task<ActionResult>ObtenerEmpresasaporMunicipio(int idMunicipio,[FromQuery]int pag=1)
         {
@@ -224,6 +225,23 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        //obtiene empresas por municipio y busqueda
+        [HttpGet("municipio/{idMunicipio}/busqueda")]
+        public async Task<ActionResult> ObtenerEmpresasaporMunicipioBusqueda(int idMunicipio, [FromQuery] string busqueda, [FromQuery] int pag = 1)
+        {
+            var response = new Response<List<Empresa>>();
+            try
+            {
+                response = await this.empresa.ObtenerEmpresaPorMunicipioBusqueda(idMunicipio, pag, busqueda);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpGet("zona/{idZona}")]
         public async Task<ActionResult> ObtenerEmpresaPorZona(int idZona,[FromQuery]int pag=1)
         {
@@ -233,6 +251,40 @@ namespace WellMarket.Controllers
                 response = await this.empresa.ObtenerEmpresaPorZona(idZona,pag);
             }
             catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        //obtiene la ubicacion de la empresa
+        [HttpGet("ubicacion/{idEmpresa}/byIdEmpresa")]
+        public async Task<ActionResult>ObtenerUbicacionEMpresa(int idEmpresa)
+        {
+            var response = new Response<Empresa>();
+            try
+            {
+                response = await empresa.ObtenerUbicacionEmpresa(idEmpresa);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        //inserta o actualiza la ubicacion de la empresa
+        [HttpGet("ubicacion/{idEmpresa}/insertar")]
+        public async Task<ActionResult>InsertarUbicacionEmpresa(int idEmpresa,[FromQuery]string lat,[FromQuery]string lng)
+        {
+            var response = new ResponseBase();
+            try
+            {
+                response = await empresa.ActualizarUbicacionEmpresa(idEmpresa, lat, lng);
+            }
+            catch (Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;

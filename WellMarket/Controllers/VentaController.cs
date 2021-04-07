@@ -23,14 +23,14 @@ namespace WellMarket.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> InsertarVenta([FromBody]VentaRequest vr)
+        public async Task<ActionResult> InsertarVenta([FromBody] VentaRequest vr)
         {
             var response = new ResponseBase();
             try
             {
-               response = await this.ventas.InsertarVenta(vr);
+                response = await this.ventas.InsertarVenta(vr);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;
@@ -39,12 +39,29 @@ namespace WellMarket.Controllers
         }
 
         [HttpGet("ticket/{id}/byId")]
-        public async Task<ActionResult>ObtenerTicketPorId(int id)
+        public async Task<ActionResult> ObtenerTicketPorId(int id)
         {
             var response = new Response<Ticket>();
             try
             {
                 response = await this.ventas.ObtenerTicketIdD(id);
+            }
+            catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
+        //obtiene los 10 productos mas vendido para el usuario por zona
+        [HttpGet("masVendidos/{zona}")]
+        public async Task<ActionResult> ObtenerMasVendidosByMunicipio(int zona)
+        {
+            var response = new Response<List<MasVendidosUsuario>>();
+            try
+            {
+                response = await ventas.ObtenerProductosMasVendidosByMunicipio(zona);
             }
             catch(Exception ex)
             {

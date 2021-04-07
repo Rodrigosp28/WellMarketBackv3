@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -21,14 +22,17 @@ namespace WellMarket.Repository
         Task<ResponseBase> actualizarLogo(int id,string logo, string img);
         Task<ResponseBase> RegistrarUsuario(Usuario user,string codVerificacion);
         Task<ResponseBase> VerificacionUsuario(int idUsuario);
+        Task<Response<List<HistorialUsuario>>> ObtenerHistorialCompraUsuario(int idUsuario);
     }
     public class UsuarioRepository : IUsuarioRepository
     {
         private readonly IConnection con;
+        private readonly IConfiguration _configuration;
 
-        public UsuarioRepository(IConnection con)
+        public UsuarioRepository(IConnection con, IConfiguration configuration)
         {
             this.con = con;
+            _configuration = configuration;
         }
         public async Task<ResponseBase> InsertarUsuario(Usuario user)
         {
@@ -364,11 +368,6 @@ namespace WellMarket.Repository
                             response.id = Convert.ToInt32(command.Parameters["@idEmpresaOut"].Value);
                             response.message = "Datos Insertados Correctamente";
                         }
-                        else
-                        {
-                            response.success = false;
-                            response.message = "Usuario Ya Registrado";
-                        }
                     }
                 }
             }
@@ -406,6 +405,50 @@ namespace WellMarket.Repository
                 }
             }
             catch (Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return response;
+        }
+
+        public async Task<Response<List<HistorialUsuario>>> ObtenerHistorialCompraUsuario(int idUsuario)
+        {
+            var response = new Response<List<HistorialUsuario>>();
+            var linkback = _configuration.GetValue<string>("backlink");
+            try
+            {
+                using(var connection = new SqlConnection(con.getConnection()))
+                {
+                    using(var command = new SqlCommand("Reporte.spObtenerHistorialByUsuario", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@idUsuario", idUsuario);
+                        connection.Open();
+                        using(var reader = await command.ExecuteReaderAsync())
+                        {
+                            var list = new List<HistorialUsuario>();
+                            while (reader.Read())
+                            {
+                                var histo = new HistorialUsuario();
+                                histo.idTicket = reader.GetInt32("idTicket");
+                                histo.fecha = reader.GetString("fecha");
+                                histo.nombreEmpresa = reader.GetString("nombreEmpresa");
+                                histo.idEmpresa = reader.GetInt32("idEmpresa");
+                                histo.imagen = reader.GetString("imagen");
+                                histo.logo = $"http://{linkback}/api/empresa/logo/" + histo.idEmpresa + "/" + histo.imagen;
+                                list.Add(histo);
+                            }
+
+                            response.Data = list;
+                            response.success = true;
+                            response.message = "datos obtenidos correctamente";
+                        }
+                    }
+                }
+            }
+            catch(Exception ex)
             {
                 response.success = false;
                 response.message = ex.Message;

@@ -107,6 +107,23 @@ namespace WellMarket.Controllers
             return Ok(response);
         }
 
+        //obtiene productos por zona y busqueda
+        [HttpGet("zona/{idZona}/busqueda")]
+        public async Task<ActionResult> ObtenerProductoPorBusquedaZona(int idZona, [FromQuery]string busqueda, [FromQuery] int pag = 1)
+        {
+            var response = new Response<List<MasVendidosUsuario>>();
+            try
+            {
+                response = await producto.ObtenerProductoBusqueda(idZona, pag, busqueda);
+            }
+            catch(Exception ex)
+            {
+                response.success = false;
+                response.message = ex.Message;
+            }
+            return Ok(response);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult> ObtenerProductosPorId(int id)
         {
